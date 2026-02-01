@@ -1,0 +1,3060 @@
+{
+  "workspaceXml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><variables><variable id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</variable><variable id=\"|B[l?E!u_iHIZ:L{kPs9\">最佳路徑代號清單</variable><variable id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</variable><variable id=\"+tK;J=4mAE+*b8?ru|nn\">K</variable><variable id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</variable><variable id=\"^}$dwET/Ej_v@GoL6H.M\">i</variable><variable id=\"#Lz5|f:^[BD})pdx?CA}\">temp</variable><variable id=\"EmI,}Fui~+|FBS[N5gFO\">Y</variable><variable id=\"-]qELrCmfSLy++Krgh}a\">X</variable><variable id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</variable><variable id=\"UCvo@pbQfIqX(1,/xxz^\">下面索引</variable><variable id=\"%f35OT9/0b5btry.Y5r(\">左邊索引</variable></variables><block type=\"procedures_callnoreturn\" id=\"^x`ADZi$,z`YHgbi#6Dh\" x=\"-570\" y=\"50\"><mutation name=\"DP動態規畫\"></mutation><next><block type=\"procedures_callnoreturn\" id=\"RPzv.j^Sz,_V+@KU9Rwj\"><mutation name=\"路徑回溯\"></mutation><next><block type=\"variables_set\" id=\"m4zIS=paYxli9p#ySSr`\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"uh45?{.WWkGDmdR%RJ~K\"><field name=\"TEXT\">路徑來源已經回溯為順向的最佳路徑代號清單，因此K從1開始</field></block></value><next><block type=\"variables_set\" id=\"]doqYGR}_2VR9(OL2ak=\"><field name=\"VAR\" id=\"+tK;J=4mAE+*b8?ru|nn\">K</field><value name=\"VALUE\"><block type=\"math_number\" id=\"f}:/Yr)U8g#F|pK!TS|T\"><field name=\"NUM\">1</field></block></value></block></next></block></next></block></next></block><block type=\"procedures_defnoreturn\" id=\"FZR%5;uX-`27)~IUV_IA\" x=\"330\" y=\"110\"><field name=\"NAME\">DP動態規畫</field><comment pinned=\"false\" h=\"80\" w=\"160\">描述此函式...</comment><statement name=\"STACK\"><block type=\"variables_set\" id=\"lUEFQau_k$mXU/11Nqw3\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"*bWHL`Z)5rpyk@`~CzJ:\"><field name=\"TEXT\">建立地圖每個位置的最高得分紀錄清單，路徑來源清單，並分別賦予初始值0，空字串</field></block></value><next><block type=\"variables_set\" id=\"okRsCy#$/u!!Q]-|-qY}\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field><next><block type=\"variables_set\" id=\"6~/u?HNiN2{.b9EV54Q.\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field><next><block type=\"variables_set\" id=\"FGmxk7magAFf59v/?/0a\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"n#+CK:vq~A@O}G[C)H!4\"><field name=\"TEXT\">地圖二維轉一維清單，最大長度維X*Y</field></block></value><next><block type=\"controls_for\" id=\"_Q:`.A/8KiI|a+Tx?~QM\"><field name=\"VAR\" id=\"^}$dwET/Ej_v@GoL6H.M\">i</field><value name=\"FROM\"><shadow type=\"math_number\" id=\"(aVYeCSVDB)h=FQj4%#W\"><field name=\"NUM\">1</field></shadow></value><value name=\"TO\"><shadow type=\"math_number\" id=\"|!_%+G!OZM1s#,8cN]Ke\"><field name=\"NUM\">10</field></shadow><block type=\"math_arithmetic\" id=\"M1^U{1J]8nxcM1;v?TlW\"><field name=\"OP\">MULTIPLY</field><value name=\"A\"><shadow type=\"math_number\" id=\"t1xCkPD`^Hw9n,|YsWH1\"><field name=\"NUM\">1</field></shadow></value><value name=\"B\"><shadow type=\"math_number\" id=\"7!HKkrNY:/`-`,g`juR/\"><field name=\"NUM\">1</field></shadow></value></block></value><value name=\"BY\"><shadow type=\"math_number\" id=\"4?%;#a;*LP.Ri+TBcj`@\"><field name=\"NUM\">1</field></shadow></value><statement name=\"DO\"><block type=\"lists_setIndex\" id=\"i$o8+ze~T}|@owx|f=ih\"><mutation at=\"false\"></mutation><field name=\"MODE\">INSERT</field><field name=\"WHERE\">LAST</field><value name=\"LIST\"><block type=\"variables_get\" id=\"74.iWpMegOC,v;m,,-b4\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value><next><block type=\"lists_setIndex\" id=\"_yi[p9rr`a!B2]iWX-.:\"><mutation at=\"false\"></mutation><field name=\"MODE\">INSERT</field><field name=\"WHERE\">LAST</field><value name=\"LIST\"><block type=\"variables_get\" id=\"hhQ%hFWvqH`@D7?F+,qX\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value></block></next></block></statement><next><block type=\"variables_set\" id=\"]YH6k[jn62Nm8Y(gJ8*6\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"j%{P4Pj3@`$@5@tayx~N\"><field name=\"TEXT\">先由左到右(X值由1-X最大值)，在由下到上(Y值由1-Y最大值)依序填表</field></block></value><next><block type=\"controls_for\" id=\"PLW74.*@]6/=/;u{Jp%/\"><field name=\"VAR\" id=\"EmI,}Fui~+|FBS[N5gFO\">Y</field><value name=\"FROM\"><shadow type=\"math_number\" id=\"M$N[=@pxC4t9Fteswf!J\"><field name=\"NUM\">1</field></shadow></value><value name=\"TO\"><shadow type=\"math_number\" id=\"2N#3m{wW3$MQ)O[joW*A\"><field name=\"NUM\">10</field></shadow></value><value name=\"BY\"><shadow type=\"math_number\" id=\"(_m]v_$I!2tT8q|r9G+A\"><field name=\"NUM\">1</field></shadow></value><statement name=\"DO\"><block type=\"controls_for\" id=\"q5yyy)nRsQspMv!wDYi^\"><field name=\"VAR\" id=\"-]qELrCmfSLy++Krgh}a\">X</field><value name=\"FROM\"><shadow type=\"math_number\" id=\"AA~A0`NEW+-Eu5g_e[c:\"><field name=\"NUM\">1</field></shadow></value><value name=\"TO\"><shadow type=\"math_number\" id=\"!wg2wT5Fk:_(IH,C~8SV\"><field name=\"NUM\">10</field></shadow></value><value name=\"BY\"><shadow type=\"math_number\" id=\".s##~j^*{L1)hjln%X+b\"><field name=\"NUM\">1</field></shadow></value><statement name=\"DO\"><block type=\"variables_set\" id=\"_ZdExK6$tzprTSd2HfH~\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"lsKDAlqyL2pjsz}6}[+c\"><field name=\"TEXT\">找出目前位置的ID，以及目前ID的上一層ID(可能是下或左)</field></block></value><next><block type=\"variables_set\" id=\"9e!/*aG?%X77Z,^Uj`YS\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"L@t($KC#bWuCmS$J?!q3\"><field name=\"TEXT\">一維、二維清單轉換公式：(Y-1)*最大X位置 +X</field></block></value><next><block type=\"variables_set\" id=\"~,OChXPVLA?GxJ~_Y..D\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field><value name=\"VALUE\"><block type=\"math_arithmetic\" id=\"WaX7i+T+;XT95qJ^[t=@\"><field name=\"OP\">ADD</field><value name=\"A\"><shadow type=\"math_number\" id=\"pqk#V:KFI+Jry603,vC8\"><field name=\"NUM\">1</field></shadow><block type=\"math_arithmetic\" id=\"Hnc4DaY{VS76:kc}8$M0\"><field name=\"OP\">MULTIPLY</field><value name=\"A\"><shadow type=\"math_number\" id=\",_/8y*A5:E;HJcGe)T$L\"><field name=\"NUM\">1</field></shadow><block type=\"math_arithmetic\" id=\"Z_oVOO%R]uuqNypoj--r\"><field name=\"OP\">MINUS</field><value name=\"A\"><shadow type=\"math_number\" id=\".w:v[jTm7~.18RM9IE_/\"><field name=\"NUM\">1</field></shadow><block type=\"variables_get\" id=\"s5dO3uhSlTka40}qB.7I\"><field name=\"VAR\" id=\"EmI,}Fui~+|FBS[N5gFO\">Y</field></block></value><value name=\"B\"><shadow type=\"math_number\" id=\"Z=[xGs`nl?Ce!/CODcmm\"><field name=\"NUM\">1</field></shadow></value></block></value><value name=\"B\"><shadow type=\"math_number\" id=\"D!n#Ixx3lUAwW+iOuZLJ\"><field name=\"NUM\">1</field></shadow></value></block></value><value name=\"B\"><shadow type=\"math_number\" id=\"tMGGC8%y%ncn}:h_i[0)\"><field name=\"NUM\">1</field></shadow><block type=\"variables_get\" id=\"]Dp6Oa]l~*}58JrPL`LD\"><field name=\"VAR\" id=\"-]qELrCmfSLy++Krgh}a\">X</field></block></value></block></value><next><block type=\"variables_set\" id=\"$?kJLi~37[clLqHbMLlm\"><field name=\"VAR\" id=\"UCvo@pbQfIqX(1,/xxz^\">下面索引</field><next><block type=\"variables_set\" id=\"+(rs.9vrD8pzj]?9PEQL\"><field name=\"VAR\" id=\"%f35OT9/0b5btry.Y5r(\">左邊索引</field><next><block type=\"variables_set\" id=\"hNXipULX*~U~g.;ggs8?\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"{SPCP#|awP2Xe-_Ff5(?\"><field name=\"TEXT\">計算當前金幣最高值(目前位置金幣+上一層由下或由左之最高金幣，並紀錄上一層來源於路徑來源清單</field></block></value><next><block type=\"controls_if\" id=\"cdvVMG{HDCr)#%xm)FP9\"><mutation elseif=\"2\" else=\"1\"></mutation><value name=\"IF0\"><block type=\"logic_operation\" id=\"@aL)z-,2wW`q0.z]#D$c\"><field name=\"OP\">AND</field><value name=\"A\"><block type=\"logic_compare\" id=\"REqO|+G}]?@-Jqs5(/cm\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"variables_get\" id=\"@r00+_y^~N`5qf~nkB7-\"><field name=\"VAR\" id=\"-]qELrCmfSLy++Krgh}a\">X</field></block></value><value name=\"B\"><block type=\"math_number\" id=\"4N725[8i6B%NaVLj*d%s\"><field name=\"NUM\">1</field></block></value></block></value><value name=\"B\"><block type=\"logic_compare\" id=\"h6H[P4aT|EK/1L/T`|z#\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"variables_get\" id=\"wlrPHCpVuA!4*.zP?o*W\"><field name=\"VAR\" id=\"EmI,}Fui~+|FBS[N5gFO\">Y</field></block></value><value name=\"B\"><block type=\"math_number\" id=\")kdBzW=*9b@3FB%@A47Z\"><field name=\"NUM\">1</field></block></value></block></value></block></value><statement name=\"DO0\"><block type=\"variables_set\" id=\"MolJOY[TmE9TnI]^2|h$\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"q/?uehe@myS$/=)^YkR+\"><field name=\"TEXT\">X=1，Y=1表示維起始點，沒有上一層由左或由下的來源，路徑清單紀錄為 S</field></block></value><next><block type=\"lists_setIndex\" id=\"U[?;pk*Hx|P8pY;Ns$K?\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"8,e@Bx*93;uWD1Lh2Wd/\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"7CtxSm;}Z];4^,vM4nV?\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value><next><block type=\"lists_setIndex\" id=\"3}#6_2R]-h~ZBKUb4.2T\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"HV!(cIEV=aa*2rn?OZ%(\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"}m${`Kw`Pn}stwZ6A=ZT\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value></block></next></block></next></block></statement><value name=\"IF1\"><block type=\"logic_compare\" id=\"pW$kjR^qsg-[^umn(0)E\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"variables_get\" id=\"jb/~X`I%iprL04tx#UYy\"><field name=\"VAR\" id=\"-]qELrCmfSLy++Krgh}a\">X</field></block></value><value name=\"B\"><block type=\"math_number\" id=\"#?r/+XMbP[X?C-pXC}Ve\"><field name=\"NUM\">1</field></block></value></block></value><statement name=\"DO1\"><block type=\"variables_set\" id=\"Sp|!m[M8jK{bLzmF*Tj|\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"}|]rr!{{/A%26VeV?67X\"><field name=\"TEXT\">最高得分清單為：上一層金幣+目前位置金幣</field></block></value><next><block type=\"lists_setIndex\" id=\"hfKm5Q3Ipf0F*ADh73Sl\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"3notF:.9TaeWAPz5d*p~\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"YWq:%@Lo`rrEy|JRGBN6\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value><value name=\"TO\"><block type=\"math_arithmetic\" id=\"52:~o2MW+;t:roB?*+t,\"><field name=\"OP\">ADD</field><value name=\"A\"><shadow type=\"math_number\" id=\"zwCt/+R(2]3c;`J;8EI+\"><field name=\"NUM\">1</field></shadow><block type=\"lists_getIndex\" id=\"gOmYCx4x)03-9UCs[.;6\"><mutation statement=\"false\" at=\"true\"></mutation><field name=\"MODE\">GET</field><field name=\"WHERE\">FROM_START</field><value name=\"VALUE\"><block type=\"variables_get\" id=\"xO`PxH@{Xeag@hkRe48,\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value></block></value><value name=\"B\"><shadow type=\"math_number\" id=\"cQ%C37q$`(I:wj1xgcwj\"><field name=\"NUM\">1</field></shadow><block type=\"maze_get_item_at\" id=\"s!|1tDbsAsFVH~RNCvI^\"><value name=\"X\"><shadow type=\"math_number\" id=\"2z_ii$Q{H4iRtZq`W67x\"><field name=\"NUM\">1</field></shadow></value><value name=\"Y\"><shadow type=\"math_number\" id=\"olNlu`A}Z]l-{NImkQ[?\"><field name=\"NUM\">1</field></shadow></value></block></value></block></value><next><block type=\"variables_set\" id=\"?Z?F06ISsi#AZY8A4]^0\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"ux%Q_;+?YP#fV1}^4kqA\"><field name=\"TEXT\">X=1，表示地圖最左邊欄，上一層不可能從左邊來，一定是從下面來，路徑清單紀錄為 D</field></block></value><next><block type=\"lists_setIndex\" id=\"9zC}^F?v5x(rj1_-vjGt\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"r?*B`]i95!uZvmhBbXqF\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"Q,G*kD:u;88(Hp@y|5N]\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value></block></next></block></next></block></next></block></statement><value name=\"IF2\"><block type=\"logic_compare\" id=\"@@ubaK{WQ2OCM#cI|m/]\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"variables_get\" id=\"q{TW_E~#:Wqq*^C(3;!]\"><field name=\"VAR\" id=\"EmI,}Fui~+|FBS[N5gFO\">Y</field></block></value><value name=\"B\"><block type=\"math_number\" id=\"Y*`=RO)be2sDBm8O=[u6\"><field name=\"NUM\">1</field></block></value></block></value><statement name=\"DO2\"><block type=\"variables_set\" id=\"kVRhXQH-@Y;u*ApNd.O9\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"whkAqGKOAwGWlm?dGIEE\"><field name=\"TEXT\">最高得分清單為：上一層金幣+目前位置金幣</field></block></value><next><block type=\"lists_setIndex\" id=\"6Zh40NPEn`i~x+[#uSsM\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"^0ulp~C_JM$jG7?dg,y,\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value><value name=\"TO\"><block type=\"math_arithmetic\" id=\"gDtq-a#RUh?aL8Jy2(E~\"><field name=\"OP\">ADD</field><value name=\"A\"><shadow type=\"math_number\" id=\"zwCt/+R(2]3c;`J;8EI+\"><field name=\"NUM\">1</field></shadow></value><value name=\"B\"><shadow type=\"math_number\" id=\"cQ%C37q$`(I:wj1xgcwj\"><field name=\"NUM\">1</field></shadow></value></block></value><next><block type=\"variables_set\" id=\"y}FLQvT]6?X5X~VbSj^[\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"1{*!Iha0s$c$@VfN^88@\"><field name=\"TEXT\">Y=1，表示地圖最下面列，上一層可能從下面來，一定是從左邊過來，路徑清單紀錄為 L</field></block></value><next><block type=\"lists_setIndex\" id=\"i2i7:6*#gi*C8w):p6^P\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"-hR%IFy?OJ-p@e$4Ts04\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value></block></next></block></next></block></next></block></statement><statement name=\"ELSE\"><block type=\"variables_set\" id=\"]y;cu[%O0V?{S_sbk}Wp\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"AGTtMZB|s9]P0~c2zJJF\"><field name=\"TEXT\">判斷是左邊來源比較大，或者下面來源比較大</field></block></value><next><block type=\"controls_if\" id=\"i#,_=#]mb*gIEo[!w4p+\"><mutation else=\"1\"></mutation><value name=\"IF0\"><block type=\"logic_compare\" id=\"vM8?nDbV)-9y:ol]jiU3\"><field name=\"OP\">GTE</field><value name=\"A\"><block type=\"lists_getIndex\" id=\")KnQ:WbxwUd?*8zq!EKT\"><mutation statement=\"false\" at=\"true\"></mutation><field name=\"MODE\">GET</field><field name=\"WHERE\">FROM_START</field><value name=\"VALUE\"><block type=\"variables_get\" id=\"o}zOxek$oKoJTS+d]Bm_\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value></block></value><value name=\"B\"><block type=\"lists_getIndex\" id=\"`0k;wtjSN9/-IhuirfdK\"><mutation statement=\"false\" at=\"true\"></mutation><field name=\"MODE\">GET</field><field name=\"WHERE\">FROM_START</field><value name=\"VALUE\"><block type=\"variables_get\" id=\"vgn[g8!e!1b,?Lz0lhH5\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value></block></value></block></value><statement name=\"DO0\"><block type=\"variables_set\" id=\"LVoTE|N8X;R2s(JH2J./\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"sOG:Z/MmaNF)b6fQa8eX\"><field name=\"TEXT\">左邊來源大於等於下面來源，選擇左邊，路徑清單紀錄為 L</field></block></value><next><block type=\"lists_setIndex\" id=\"@5iB-f+#)KSh(MTICZLN\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"Nwz=27ezW+0/{@+d?tzX\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"bS%4#8b,6x%mC/~D*d$!\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value><next><block type=\"lists_setIndex\" id=\"T+OZ:[zJMS|mejOXLFge\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\")}0H~Au)LuNtvsPc0%)`\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"beN2q2~$3wZtPUlGmfff\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value></block></next></block></next></block></statement><statement name=\"ELSE\"><block type=\"variables_set\" id=\"o_bq3J|JV/L.m.*K!C/W\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"WJPG]ZM_yVcVeG9.0TV8\"><field name=\"TEXT\">左邊來源小於下面來源，選擇下面，路徑清單紀錄為 D</field></block></value><next><block type=\"lists_setIndex\" id=\"oXmgjH]{KpTGU}/Y52j0\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"4~$Y6#dJ!aDCC8jdEz$w\"><field name=\"VAR\" id=\"$wf|d76r*X2v~cTOSRJZ\">最高得分清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"6QDnDP+N$x3-sHYg;a4Z\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value><next><block type=\"lists_setIndex\" id=\"4Mt~96m{;6[?2b+xsh08\"><mutation at=\"true\"></mutation><field name=\"MODE\">SET</field><field name=\"WHERE\">FROM_START</field><value name=\"LIST\"><block type=\"variables_get\" id=\"...MS1rBAaDX1B=!86-X\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"X:FCoTFhgzvsxMT:8uxW\"><field name=\"VAR\" id=\"?3hI}@4Yx%3Uj|)A1(Rd\">目前索引</field></block></value></block></next></block></next></block></statement></block></next></block></statement></block></next></block></next></block></next></block></next></block></next></block></next></block></statement></block></statement></block></next></block></next></block></next></block></next></block></next></block></next></block></statement></block><block type=\"main_logic_container\" id=\"main_logic\" deletable=\"false\" x=\"-570\" y=\"170\"><value name=\"MY_X\"><shadow type=\"get_my_x\" id=\"CGi5pZ1Qfj{oN05-+V)c\"></shadow></value><value name=\"MY_Y\"><shadow type=\"get_my_y\" id=\"Ch=I=3D2X_@8-%RjU#?y\"></shadow></value><value name=\"MY_SCORE\"><shadow type=\"get_my_score\" id=\"jzp=3lHphU)}[9NF/.~X\"></shadow></value><statement name=\"STACK\"><block type=\"variables_set\" id=\"]oo%1J`i_Br6|^5S%f[z\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"s30A_/gv.^*r,phE7~m:\"><field name=\"TEXT\">L表示由左邊過去，因此要向右，否則表示由下面上去，因此要向上</field></block></value><next><block type=\"controls_if\" id=\"VGGhltN*|vE;;(!Q?+lJ\"><mutation else=\"1\"></mutation><value name=\"IF0\"><block type=\"logic_compare\" id=\"6)1aH{2=pKq(zq_q9Kb7\"><field name=\"OP\">EQ</field><value name=\"B\"><block type=\"text\" id=\"8^1Z-$Ve!|::mc[~PW4e\"><field name=\"TEXT\">L</field></block></value></block></value><next><block type=\"math_change\" id=\"tuN;q0%Q(c`WH@w;.oR@\"><field name=\"VAR\" id=\"+tK;J=4mAE+*b8?ru|nn\">K</field><value name=\"DELTA\"><shadow type=\"math_number\" id=\"OfFHjb;?^rLN)F!)C38B\"><field name=\"NUM\">1</field></shadow></value></block></next></block></next></block></statement></block><block type=\"procedures_defnoreturn\" id=\"2h`Ur8!pDI-VVb`eQ#]s\" x=\"-570\" y=\"450\"><field name=\"NAME\">路徑回溯</field><comment pinned=\"false\" h=\"80\" w=\"160\">描述此函式...</comment><statement name=\"STACK\"><block type=\"variables_set\" id=\"jVD4p:0Cd%.(i~(x0o(Z\"><field name=\"VAR\" id=\"|B[l?E!u_iHIZ:L{kPs9\">最佳路徑代號清單</field><value name=\"VALUE\"><block type=\"lists_create_with\" id=\"bHhhdjs_lK0s]lGr^)JE\"><mutation items=\"0\"></mutation></block></value><next><block type=\"variables_set\" id=\"D9!:qr_5{A,YXEmh?`Dy\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"|WE/:QpTe=i8GsXmpz2C\"><field name=\"TEXT\">要逆向回溯，從路徑來源清單最後一個開始讀取</field></block></value><next><block type=\"variables_set\" id=\"!k/f1dF?2H%H`e,`1}xw\"><field name=\"VAR\" id=\"+tK;J=4mAE+*b8?ru|nn\">K</field><value name=\"VALUE\"><block type=\"lists_length\" id=\"oE~eCcCRoWi5Y6U,(g5Q\"><value name=\"VALUE\"><block type=\"variables_get\" id=\"KD7WYCDZ/P~4w!igrUQ;\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value></block></value><next><block type=\"variables_set\" id=\"lQ/J$S4qJEcV4V*O|i,h\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"4@)xDH$H)=lg_R.#`lHj\"><field name=\"TEXT\">逆向回推路徑，如果來源是S，表示已到達起點，迴圈結束</field></block></value><next><block type=\"variables_set\" id=\"f!Ej`5FO95@Y(*B[is#u\"><field name=\"VAR\" id=\"#Lz5|f:^[BD})pdx?CA}\">temp</field><next><block type=\"controls_whileUntil\" id=\"fm|bBJ~+WzaQ]N8}p_nd\"><field name=\"MODE\">UNTIL</field><value name=\"BOOL\"><block type=\"logic_compare\" id=\"^I|;PC^N6v^`eFDX-epm\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"variables_get\" id=\"JG%7YZ;/dFiG-J,}.W?,\"><field name=\"VAR\" id=\"#Lz5|f:^[BD})pdx?CA}\">temp</field></block></value></block></value><statement name=\"DO\"><block type=\"variables_set\" id=\"Lnl@d~t:=O7-qqQ!z@F;\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"(ZtSupz45_py4UBVO/3C\"><field name=\"TEXT\">找到路徑就加在最佳路徑清單第一筆，這樣到達起點S，跑完迴圈，清單的順序就是正確順序</field></block></value><next><block type=\"variables_set\" id=\"$0U!TZB9[V9A53Rxd.5w\"><field name=\"VAR\" id=\"#Lz5|f:^[BD})pdx?CA}\">temp</field><value name=\"VALUE\"><block type=\"lists_getIndex\" id=\"s6FdkRz6[gda[c6O`0g(\"><mutation statement=\"false\" at=\"true\"></mutation><field name=\"MODE\">GET</field><field name=\"WHERE\">FROM_START</field><value name=\"VALUE\"><block type=\"variables_get\" id=\"!K#JUDV:-pNOsMPzahNg\"><field name=\"VAR\" id=\"M5L7d%mp)4J6_,x1Ly)N\">路徑來源清單</field></block></value><value name=\"AT\"><block type=\"variables_get\" id=\"i9}W_n;R9;ID{WKLKdIp\"><field name=\"VAR\" id=\"+tK;J=4mAE+*b8?ru|nn\">K</field></block></value></block></value><next><block type=\"lists_setIndex\" id=\"/lEyFO*txb,fLsGPL3Z#\"><mutation at=\"false\"></mutation><field name=\"MODE\">INSERT</field><field name=\"WHERE\">FIRST</field><value name=\"LIST\"><block type=\"variables_get\" id=\"?05vD;+-3/AQOKTc5(5:\"><field name=\"VAR\" id=\"|B[l?E!u_iHIZ:L{kPs9\">最佳路徑代號清單</field></block></value><next><block type=\"variables_set\" id=\"-/ZZpvCO{tZnkOFxpM`Z\"><field name=\"VAR\" id=\"2ZKi4-VJ?g!ak==%6$U5\">註解</field><value name=\"VALUE\"><block type=\"text\" id=\"T**Z@lCZm2qU;{(L*QJZ\"><field name=\"TEXT\">前一筆如果是L表示從左邊來，推回去X-1，ID也是-1，如果是下面來，Y-1，ID則是 -最大X</field></block></value><next><block type=\"controls_if\" id=\"wLLhKOKnO{CvazWN^1nm\"><mutation else=\"1\"></mutation><value name=\"IF0\"><block type=\"logic_compare\" id=\"!//!o[u{Fmwm:73f:.QW\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"variables_get\" id=\"$.`K]8]Yx5|Qx/b7%V,1\"><field name=\"VAR\" id=\"#Lz5|f:^[BD})pdx?CA}\">temp</field></block></value></block></value><statement name=\"DO0\"><block type=\"math_change\" id=\"@1Rw]|sd~R9LO[2g)9=K\"><field name=\"VAR\" id=\"+tK;J=4mAE+*b8?ru|nn\">K</field><value name=\"DELTA\"><shadow type=\"math_number\" id=\"g;9Ue41eQ,%ETg/~HSsf\"><field name=\"NUM\">-1</field></shadow></value></block></statement><statement name=\"ELSE\"><block type=\"math_change\" id=\"S+HnBJHCx(pLP6tm~|Rm\"><field name=\"VAR\" id=\"+tK;J=4mAE+*b8?ru|nn\">K</field><value name=\"DELTA\"><shadow type=\"math_number\" id=\"BmaF;%pU/Z{sL2X9/!s)\"><field name=\"NUM\">-1</field></shadow></value></block></statement></block></next></block></next></block></next></block></next></block></statement><next><block type=\"text_print\" id=\"(-BmNjbzCCBf#PT]:#V=\"><value name=\"TEXT\"><shadow type=\"text\" id=\"m_{rpQ^L/jPgV~+x94Y2\"><field name=\"TEXT\">abc</field></shadow><block type=\"variables_get\" id=\"b,W{!jP}*Rcal*caF(-y\"><field name=\"VAR\" id=\"|B[l?E!u_iHIZ:L{kPs9\">最佳路徑代號清單</field></block></value></block></next></block></next></block></next></block></next></block></next></block></next></block></statement></block></xml>",
+  "levelsData": [
+    {
+      "name": "Level3",
+      "maps": [
+        {
+          "name": "地圖一",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              4
+            ],
+            [
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              1
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1
+            ]
+          ]
+        },
+        {
+          "name": "地圖二",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              4
+            ],
+            [
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              0,
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1
+            ]
+          ]
+        },
+        {
+          "name": "地圖三",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              4
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              1
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              1,
+              0,
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              1
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        }
+      ],
+      "toolboxConfig": null
+    },
+    {
+      "name": "Level2",
+      "maps": [
+        {
+          "name": "地圖一",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              4
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              }
+            ],
+            [
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        },
+        {
+          "name": "地圖二",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              0,
+              4
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              0,
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 5,
+                "value": 2
+              }
+            ],
+            [
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              }
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ]
+          ]
+        },
+        {
+          "name": "地圖三",
+          "layout": [
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              4
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 5,
+                "value": 2
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 5,
+                "value": 2
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        }
+      ],
+      "toolboxConfig": null
+    },
+    {
+      "name": "Level4",
+      "maps": [
+        {
+          "name": "地圖一",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              4
+            ],
+            [
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        },
+        {
+          "name": "地圖二",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              1,
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              0,
+              4
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              1,
+              0
+            ],
+            [
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              0,
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              }
+            ]
+          ]
+        },
+        {
+          "name": "地圖三",
+          "layout": [
+            [
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              4
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              1,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              1
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              0
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              1,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              1,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 5,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              1
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              1,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 5,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        }
+      ],
+      "toolboxConfig": null
+    },
+    {
+      "name": "Level1",
+      "maps": [
+        {
+          "name": "地圖一",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              4
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        },
+        {
+          "name": "地圖二",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              4
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              0,
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        },
+        {
+          "name": "地圖三",
+          "layout": [
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              4
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 1
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 3
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              {
+                "type": 2,
+                "value": 3
+              },
+              0
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              }
+            ],
+            [
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              0
+            ],
+            [
+              3,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              {
+                "type": 2,
+                "value": 2
+              },
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 1
+              },
+              0,
+              {
+                "type": 2,
+                "value": 2
+              }
+            ]
+          ]
+        }
+      ],
+      "toolboxConfig": null
+    }
+  ],
+  "activeLevelIndex": 3,
+  "activeMapIndex": 1
+}
