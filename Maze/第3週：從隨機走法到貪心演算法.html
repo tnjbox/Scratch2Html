@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3週：從隨機走法到貪心演算法</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #f5f7fa;
+    color: #222;
+    padding: 30px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    color: #1a73e8;
+  }
+  table {
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  td {
+    border: 1px solid #888;
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .positive { background-color: #d0f5c7; }
+  .negative { background-color: #fcd6d6; }
+  .zero { background-color: #f0f0f0; }
+  .player {
+    background-color: #ffe066 !important;
+    border: 2px solid #ff9800;
+  }
+  .info-box {
+    background: #e8f0fe;
+    padding: 10px;
+    margin: 15px 0;
+    border-left: 5px solid #1a73e8;
+  }
+  .code-block {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 12px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-family: "Courier New", monospace;
+    overflow-x: auto;
+    margin-top: 10px;
+  }
+  button {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #155fc0;
+  }
+</style>
+</head>
+<body>
+  <h1>💰 第3週：從隨機走法到貪心演算法</h1>
+
+  <h2>🎯 學習目標</h2>
+  <ul>
+    <li>理解「隨機搜尋」與「貪心演算法」的差別</li>
+    <li>學習電腦如何用程式決定「下一步要往哪走」</li>
+    <li>體驗最多 15 步移動的限制與金幣總量統計</li>
+  </ul>
+
+  <h2>📘 一、概念介紹</h2>
+  <p>電腦在決定「下一步」的行動時，可以有不同策略：</p>
+  <ul>
+    <li><b>隨機走法：</b> 電腦亂選方向，就像盲目探索。</li>
+    <li><b>貪心走法：</b> 電腦會觀察上下左右四格，走向金幣最多的那一格。</li>
+  </ul>
+
+  <div class="info-box">
+    <b>目前步數：</b> <span id="steps">0</span> / 15<br>
+    <b>累積金幣：</b> <span id="totalCoin">0</span><br>
+    <b>目前策略：</b> <span id="mode">未開始</span>
+  </div>
+
+  <button onclick="startRandom()">🎲 隨機走法開始</button>
+  <button onclick="startGreedy()">🤔 貪心走法開始</button>
+  <button onclick="initMap()">🔄 重新產生地圖</button>
+  <div id="map-area"></div>
+
+  <h2>💻 二、程式碼教學區</h2>
+
+  <h3>🎲 隨機走法的主角移動程式</h3>
+  <p>隨機走法是讓電腦每次亂挑一個方向，往那邊走一步：</p>
+  <div class="code-block">
+  // 隨機走法主要邏輯<br>
+  const directions = [<br>
+  &nbsp;&nbsp;{ r: -1, c: 0 },  // 上<br>
+  &nbsp;&nbsp;{ r: 1, c: 0 },   // 下<br>
+  &nbsp;&nbsp;{ r: 0, c: -1 },  // 左<br>
+  &nbsp;&nbsp;{ r: 0, c: 1 }    // 右<br>
+  ];<br>
+  let dir = directions[Math.floor(Math.random() * 4)]; // 隨機挑一個<br>
+  let newRow = player.row + dir.r;<br>
+  let newCol = player.col + dir.c;<br>
+  moveTo(newRow, newCol); // 嘗試移動主角
+  </div>
+
+  <h3>🤔 貪心走法的主角移動程式</h3>
+  <p>貪心走法會檢查上下左右四格，挑出「金幣最多」的那格：</p>
+  <div class="code-block">
+  // 貪心走法主要邏輯<br>
+  const directions = [<br>
+  &nbsp;&nbsp;{ r: -1, c: 0 }, { r: 1, c: 0 },<br>
+  &nbsp;&nbsp;{ r: 0, c: -1 }, { r: 0, c: 1 }<br>
+  ];<br>
+  let bestMove = null;<br>
+  let bestCoin = -Infinity;<br>
+  <br>
+  for (let dir of directions) {<br>
+  &nbsp;&nbsp;let nr = player.row + dir.r;<br>
+  &nbsp;&nbsp;let nc = player.col + dir.c;<br>
+  &nbsp;&nbsp;if (nr &lt; 0 || nr &gt;= SIZE || nc &lt; 0 || nc &gt;= SIZE) continue; // 邊界檢查<br>
+  &nbsp;&nbsp;if (map[nr][nc] &gt; bestCoin) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;bestCoin = map[nr][nc];<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;bestMove = { r: nr, c: nc };<br>
+  &nbsp;&nbsp;}<br>
+  }<br>
+  moveTo(bestMove.r, bestMove.c); // 往金幣最多的方向走
+  </div>
+
+  <p>💬 <b>教師講解建議：</b>  
+  可以請學生觀察兩段程式碼，思考：  
+  <ul>
+    <li>隨機走法用「亂數」選方向 → <code>Math.random()</code></li>
+    <li>貪心走法用「比較大小」挑最佳 → <code>if (map[nr][nc] &gt; bestCoin)</code></li>
+  </ul>
+  </p>
+
+  <script>
+    const SIZE = 7;
+    const MAX_STEPS = 15;
+    let map = [];
+    let player = { row: 3, col: 3 };
+    let totalCoin = 0;
+    let steps = 0;
+    let mode = "";
+    let timer;
+
+    function initMap() {
+      map = [];
+      for (let i = 0; i < SIZE; i++) {
+        let row = [];
+        for (let j = 0; j < SIZE; j++) {
+          let coin = Math.floor(Math.random() * 7) - 3;
+          row.push(coin);
+        }
+        map.push(row);
+      }
+      player = { row: 3, col: 3 };
+      map[player.row][player.col] = 0;
+      totalCoin = 0;
+      steps = 0;
+      clearInterval(timer);
+      drawMap();
+      updateInfo("未開始");
+    }
+
+    function drawMap() {
+      let html = "<table>";
+      for (let i = 0; i < SIZE; i++) {
+        html += "<tr>";
+        for (let j = 0; j < SIZE; j++) {
+          let coin = map[i][j];
+          let cls = coin > 0 ? "positive" : (coin < 0 ? "negative" : "zero");
+          if (i === player.row && j === player.col) cls += " player";
+          html += `<td class="${cls}">${coin}</td>`;
+        }
+        html += "</tr>";
+      }
+      html += "</table>";
+      document.getElementById("map-area").innerHTML = html;
+    }
+
+    function updateInfo(currentMode) {
+      document.getElementById("steps").textContent = steps;
+      document.getElementById("totalCoin").textContent = totalCoin;
+      document.getElementById("mode").textContent = currentMode;
+    }
+
+    function moveTo(newRow, newCol) {
+      if (newRow < 0 || newRow >= SIZE || newCol < 0 || newCol >= SIZE) return false;
+      totalCoin += map[newRow][newCol];
+      map[newRow][newCol] = 0;
+      player.row = newRow;
+      player.col = newCol;
+      steps++;
+      drawMap();
+      updateInfo(mode);
+      return true;
+    }
+
+    function startRandom() {
+      initMap();
+      mode = "隨機走法";
+      timer = setInterval(() => {
+        if (steps >= MAX_STEPS) {
+          clearInterval(timer);
+          alert(`🎮 遊戲結束！\n策略：${mode}\n總金幣：${totalCoin}`);
+          return;
+        }
+        const directions = [
+          { r: -1, c: 0 }, { r: 1, c: 0 },
+          { r: 0, c: -1 }, { r: 0, c: 1 }
+        ];
+        let dir = directions[Math.floor(Math.random() * 4)];
+        let newRow = player.row + dir.r;
+        let newCol = player.col + dir.c;
+        moveTo(newRow, newCol);
+      }, 500);
+    }
+
+    function startGreedy() {
+      initMap();
+      mode = "貪心走法";
+      timer = setInterval(() => {
+        if (steps >= MAX_STEPS) {
+          clearInterval(timer);
+          alert(`🎮 遊戲結束！\n策略：${mode}\n總金幣：${totalCoin}`);
+          return;
+        }
+        const directions = [
+          { r: -1, c: 0 }, { r: 1, c: 0 },
+          { r: 0, c: -1 }, { r: 0, c: 1 }
+        ];
+        let bestMove = null;
+        let bestCoin = -Infinity;
+        for (let dir of directions) {
+          let nr = player.row + dir.r;
+          let nc = player.col + dir.c;
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+          if (map[nr][nc] > bestCoin) {
+            bestCoin = map[nr][nc];
+            bestMove = { r: nr, c: nc };
+          }
+        }
+        if (bestMove) moveTo(bestMove.r, bestMove.c);
+      }, 500);
+    }
+
+    initMap();
+  </script>
+
+  <h2>🧩 三、延伸思考</h2>
+  <ol>
+    <li>貪心演算法會不會錯過遠方的大金幣？</li>
+    <li>如果地圖有負金幣，貪心走法是否還有效？</li>
+    <li>第4週，我們將嘗試「深度搜尋 (DFS)」，讓電腦嘗試所有可能路徑！</li>
+  </ol>
+</body>
+</html>

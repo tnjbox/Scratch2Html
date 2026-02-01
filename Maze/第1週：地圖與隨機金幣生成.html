@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第1週：地圖與隨機金幣生成</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #f5f7fa;
+    color: #222;
+    padding: 30px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    color: #1a73e8;
+  }
+  table {
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  td {
+    border: 1px solid #888;
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .positive { background-color: #d0f5c7; } /* 綠色系代表正金幣 */
+  .negative { background-color: #fcd6d6; } /* 紅色系代表負金幣 */
+  .zero { background-color: #f0f0f0; }
+  .start {
+    background-color: #ffe066 !important;
+    border: 2px solid #ff9800;
+  }
+  .code-block {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 10px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-family: "Courier New", monospace;
+    overflow-x: auto;
+  }
+</style>
+</head>
+<body>
+  <h1>🧭 第1週：地圖與隨機金幣生成</h1>
+  <h2>🎯 學習目標</h2>
+  <ul>
+    <li>認識什麼是陣列（Array）</li>
+    <li>了解亂數（Random）的概念</li>
+    <li>使用程式生成 7×7 的隨機金幣地圖</li>
+  </ul>
+
+  <h2>📘 一、什麼是陣列？</h2>
+  <p>陣列就像「學校的置物櫃」，每一格都有編號，可以放資料。  
+  例如 7 個班級的分數：</p>
+  <div class="code-block">
+    let score = [80, 75, 90, 88, 95, 70, 60];<br>
+    console.log(score[0]); // 顯示第一個班級的分數：80<br>
+    console.log(score[4]); // 顯示第五個班級的分數：95
+  </div>
+
+  <h2>🎲 二、什麼是亂數？</h2>
+  <p>亂數是電腦隨機產生的數字。</p>
+  <div class="code-block">
+    let x = Math.random(); // 產生 0~1 間的亂數<br>
+    console.log(x);
+  </div>
+  <p>若要產生 -3 ~ 3 之間的整數，可這樣寫：</p>
+  <div class="code-block">
+    let coin = Math.floor(Math.random() * 7) - 3;
+  </div>
+
+  <h2>🗺️ 三、7×7 金幣地圖生成程式</h2>
+  <p>每個格子代表一個座標，裡面存放隨機的金幣數（可能是負數）。  
+  中央位置 (3,3) 為主角出發點，金幣值固定為 <b>0</b>。</p>
+
+  <div class="code-block">
+// 建立 7x7 地圖，每格隨機產生 -3 ~ 3 金幣
+const SIZE = 7;
+let map = [];
+const startRow = 3;
+const startCol = 3;
+
+for (let i = 0; i < SIZE; i++) {
+  let row = [];
+  for (let j = 0; j < SIZE; j++) {
+    let coin = Math.floor(Math.random() * 7) - 3;
+    row.push(coin);
+  }
+  map.push(row);
+}
+
+// 中央位置固定為 0，表示出發點
+map[startRow][startCol] = 0;
+  </div>
+
+  <h2>💰 四、隨機生成的金幣地圖</h2>
+  <p>黃色格子代表出發點 (3,3)，金幣值固定為 0。</p>
+  <div id="map-area"></div>
+
+  <h2>🧩 五、小任務</h2>
+  <ol>
+    <li>試著改變地圖大小（如改成 5×5）</li>
+    <li>試著把金幣範圍改為 -5 ~ 5</li>
+    <li>試著讓主角位置隨機變動</li>
+  </ol>
+
+  <script>
+    // 🪄 以下是實際會在畫面上產生地圖的程式碼
+    const SIZE = 7;
+    const startRow = 3;
+    const startCol = 3;
+    let map = [];
+
+    // 生成二維陣列
+    for (let i = 0; i < SIZE; i++) {
+      let row = [];
+      for (let j = 0; j < SIZE; j++) {
+        let coin = Math.floor(Math.random() * 7) - 3;
+        row.push(coin);
+      }
+      map.push(row);
+    }
+
+    // 中央位置金幣值設定為 0（出發點）
+    map[startRow][startCol] = 0;
+
+    // 顯示在畫面上
+    let html = "<table>";
+    for (let i = 0; i < SIZE; i++) {
+      html += "<tr>";
+      for (let j = 0; j < SIZE; j++) {
+        let coin = map[i][j];
+        let cls = coin > 0 ? "positive" : (coin < 0 ? "negative" : "zero");
+        if (i === startRow && j === startCol) cls += " start";
+        html += `<td class="${cls}">${coin}</td>`;
+      }
+      html += "</tr>";
+    }
+    html += "</table>";
+
+    document.getElementById("map-area").innerHTML = html;
+
+    console.log("🎯 隨機生成的金幣地圖：");
+    console.table(map);
+  </script>
+</body>
+</html>

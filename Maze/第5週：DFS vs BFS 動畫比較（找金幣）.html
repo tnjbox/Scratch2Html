@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>第5週：DFS vs BFS 動畫比較（找金幣）</title>
+<style>
+  body{
+    font-family:"Microsoft JhengHei", sans-serif;
+    background:#f5f7fa;
+    padding:30px;
+    line-height:1.75;
+    color:#222;
+  }
+  h1,h2,h3{ color:#1a73e8; margin: 10px 0; }
+  .box{
+    background:#fff;
+    border-left:5px solid #1a73e8;
+    padding:14px 16px;
+    margin:14px 0;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
+  .hint{
+    background:#e8f0fe;
+    border-left:5px solid #1a73e8;
+    padding:10px 12px;
+    border-radius:8px;
+    margin-top:10px;
+  }
+  .small{ font-size:14px; color:#555; }
+  .mono{ font-family:Consolas, "Courier New", monospace; }
+
+  .row{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .panel{
+    flex: 1 1 420px;
+    min-width: 360px;
+  }
+
+  button{
+    background:#1a73e8;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-right:8px;
+    margin-top: 6px;
+  }
+  button:hover{ background:#155fc0; }
+  button.secondary{
+    background:#475569;
+  }
+  button.secondary:hover{
+    background:#334155;
+  }
+
+  input[type="number"]{
+    width:72px;
+    padding:6px 8px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    margin-left:6px;
+  }
+  label{ display:inline-block; margin-right:10px; }
+
+  table{ border-collapse:collapse; margin-top:10px; }
+  td{
+    width:44px; height:44px;
+    border:1px solid #777;
+    text-align:center;
+    font-weight:bold;
+    font-size:15px;
+    user-select:none;
+  }
+  .positive{ background:#c8f7c5; }
+  .negative{ background:#f7c5c5; }
+  .zero{ background:#eee; }
+
+  .start{
+    background:#ffe066 !important;
+    border:2px solid #ff9800;
+  }
+  .head{
+    background:#90caf9 !important;
+    border:2px solid #1565c0;
+  }
+
+  /* 彩虹七色（最佳路徑色塊） */
+  .rb0{ background:#ff4d4f !important; color:#111; } /* 紅 */
+  .rb1{ background:#ff7a45 !important; color:#111; } /* 橙 */
+  .rb2{ background:#ffd666 !important; color:#111; } /* 黃 */
+  .rb3{ background:#73d13d !important; color:#111; } /* 綠 */
+  .rb4{ background:#40a9ff !important; color:#111; } /* 藍 */
+  .rb5{ background:#597ef7 !important; color:#111; } /* 靛 */
+  .rb6{ background:#b37feb !important; color:#111; } /* 紫 */
+
+  .legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+    align-items:center;
+  }
+  .swatch{
+    width:18px; height:18px;
+    border:1px solid rgba(0,0,0,.25);
+    border-radius:4px;
+    display:inline-block;
+    vertical-align:middle;
+  }
+
+  .coords{
+    background:#0f172a;
+    color:#e2e8f0;
+    border-radius:10px;
+    padding:12px;
+    min-height:240px;
+    max-height:360px;
+    overflow:auto;
+    font-family:Consolas, "Courier New", monospace;
+    white-space:pre;
+  }
+
+  .code-block{
+    background:#0f172a;
+    color:#e2e8f0;
+    padding:12px;
+    border-radius:10px;
+    overflow:auto;
+    font-family:Consolas, "Courier New", monospace;
+    white-space:pre-wrap;
+    line-height:1.55;
+  }
+
+  .compare{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    overflow:hidden;
+    border-radius:10px;
+  }
+  .compare th, .compare td{
+    border:1px solid #cbd5e1;
+    padding:10px;
+    text-align:left;
+    vertical-align:top;
+    background:#fff;
+  }
+  .compare th{ background:#f1f5f9; }
+</style>
+</head>
+
+<body>
+<h1>第5週：DFS vs BFS 動畫比較課程（以「找金幣」為例）</h1>
+
+<div class="box">
+  <h2>🎯 本週學習目標</h2>
+  <ul>
+    <li>認識 BFS（廣度優先搜尋）與它的「一層一層擴展」特色。</li>
+    <li>用生活情境理解 BFS 的運作方式（Wave / 波紋式擴散）。</li>
+    <li>比較 DFS 與 BFS 的差異：探索順序、記憶體需求、適用情境。</li>
+    <li>套用到找金幣：分別用 DFS 與 BFS 找出固定步數內（預設 15 步）最佳路徑，並播放歷程。</li>
+  </ul>
+</div>
+
+<div class="box">
+  <h2>📘 一、認識 BFS（廣度優先搜尋）</h2>
+  <p>
+    BFS（Breadth-First Search）可以想成：
+    <b>先把「離起點最近的所有位置」都看過，再看更遠一層。</b>
+  </p>
+
+  <h3>✅ BFS 的核心想法</h3>
+  <ol>
+    <li>先把起點放進隊列（Queue）。</li>
+    <li>從隊列前面取出一個位置，往四周擴展，把新位置放到隊列後面。</li>
+    <li>因為隊列是「先進先出」，所以 BFS 會一層一層擴展。</li>
+  </ol>
+
+  <div class="hint small">
+    BFS 常用來找「最短路徑」：因為它會先找到步數最少的解（在無權重情況）。<br/>
+    但在本題目標是「最大金幣」：我們依然可以用 BFS 做完整展開，只是會比較吃記憶體。
+  </div>
+</div>
+
+<div class="box">
+  <h2>🌍 二、用生活例子理解 BFS 的運作方式</h2>
+  <h3>例子：水波擴散 / 手機訊號</h3>
+  <ul>
+    <li>丟石頭到水裡，水波會從中心「一圈一圈」往外擴散。</li>
+    <li>BFS 就像水波：先擴散到距離 1 的格子，再到距離 2 的格子……</li>
+    <li>所以 BFS 的探索順序是「由近到遠」。</li>
+  </ul>
+  <div class="hint small">
+    對照 DFS：DFS 像是「先挑一條路一直走到底」，走不通再回頭。
+  </div>
+</div>
+
+<div class="box">
+  <h2>📊 三、DFS 與 BFS 的差異比較表</h2>
+  <table class="compare">
+    <tr>
+      <th style="width:22%;">項目</th>
+      <th style="width:39%;">DFS（深度優先）</th>
+      <th style="width:39%;">BFS（廣度優先）</th>
+    </tr>
+    <tr>
+      <td><b>探索順序</b></td>
+      <td>一路走到底，再回溯換路（像探險迷宮）</td>
+      <td>一層一層展開（像水波擴散）</td>
+    </tr>
+    <tr>
+      <td><b>資料結構</b></td>
+      <td>常用：遞迴 / Stack（堆疊）</td>
+      <td>必用：Queue（隊列，先進先出）</td>
+    </tr>
+    <tr>
+      <td><b>記憶體需求</b></td>
+      <td>通常較省（只記目前路徑）</td>
+      <td>通常較吃（要存整層的所有狀態）</td>
+    </tr>
+    <tr>
+      <td><b>最短路徑</b></td>
+      <td>不保證最短</td>
+      <td>（無權重）可保證最短</td>
+    </tr>
+    <tr>
+      <td><b>適用情境</b></td>
+      <td>要走到底、找任意解、或完整列舉（回溯題）</td>
+      <td>要找最短步數、或要層級探索/波紋擴展</td>
+    </tr>
+  </table>
+</div>
+
+<div class="box">
+  <h2>🪙 四、套用到「找金幣」：DFS 與 BFS 模擬結果＋最佳路徑歷程</h2>
+
+  <div class="hint small">
+    本示範規則：<b>不可重複走格子</b>（避免原地來回刷分），並在固定步數內（預設 15 步）找最大金幣路徑。<br/>
+    DFS 與 BFS 都能找出最佳解，但 BFS 通常需要存更多狀態（記憶體較吃）。
+  </div>
+
+  <div>
+    <label class="small">
+      最多步數：
+      <input id="maxSteps" type="number" min="1" max="15" value="15"/>
+      （建議 10～15）
+    </label>
+    <button onclick="initMap()" class="secondary">🔄 重新產生地圖</button>
+    <button onclick="runBoth()">🚀 同時執行 DFS & BFS</button>
+  </div>
+
+  <div class="row" style="margin-top:10px;">
+    <div class="panel">
+      <h3>🗺️ 金幣地圖（7×7）</h3>
+      <div id="map"></div>
+      <div class="legend small">
+        <span class="swatch start"></span> 起點　
+        <span class="swatch head"></span> 播放中目前位置　
+        <span class="small">最佳路徑：彩虹七色（紅橙黃綠藍靛紫）循環</span>
+      </div>
+      <div class="legend small" style="margin-top:8px;">
+        <span class="swatch rb0"></span>
+        <span class="swatch rb1"></span>
+        <span class="swatch rb2"></span>
+        <span class="swatch rb3"></span>
+        <span class="swatch rb4"></span>
+        <span class="swatch rb5"></span>
+        <span class="swatch rb6"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>🎬 搜尋動畫比較（概念展示）</h3>
+      <p class="small">
+        這裡的動畫不是把所有搜尋過程完整播放（會太久），而是用「取樣」方式讓你看出 DFS 與 BFS 的探索順序差異。
+      </p>
+      <button onclick="playSearch('dfs')" class="secondary">▶ 播放 DFS 探索順序（取樣）</button>
+      <button onclick="playSearch('bfs')" class="secondary">▶ 播放 BFS 探索順序（取樣）</button>
+      <div class="hint small">
+        DFS：會看到「一直往深處走」的感覺；BFS：會看到「附近一圈一圈擴張」的感覺。
+      </div>
+      <p class="small mono">
+        DFS 探索取樣點數：<span id="dfsTraceN">0</span>　
+        BFS 探索取樣點數：<span id="bfsTraceN">0</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px;">
+    <div class="panel box">
+      <h3>✅ DFS 結果</h3>
+      <p class="mono small">
+        最大金幣：<span id="dfsBestCoin">-</span><br/>
+        狀態數（展開次數）：<span id="dfsStates">-</span><br/>
+        計算時間：<span id="dfsMs">-</span> ms
+      </p>
+      <button onclick="playBest('dfs')">▶ 播放 DFS 最佳路徑</button>
+      <div class="small">目前播放：<span id="dfsPlayStep" class="mono">0</span>/<span id="dfsPlayTotal" class="mono">0</span></div>
+      <div id="dfsLog" class="coords"></div>
+    </div>
+
+    <div class="panel box">
+      <h3>✅ BFS 結果</h3>
+      <p class="mono small">
+        最大金幣：<span id="bfsBestCoin">-</span><br/>
+        狀態數（展開次數）：<span id="bfsStates">-</span><br/>
+        計算時間：<span id="bfsMs">-</span> ms
+      </p>
+      <button onclick="playBest('bfs')">▶ 播放 BFS 最佳路徑</button>
+      <div class="small">目前播放：<span id="bfsPlayStep" class="mono">0</span>/<span id="bfsPlayTotal" class="mono">0</span></div>
+      <div id="bfsLog" class="coords"></div>
+    </div>
+  </div>
+</div>
+
+<div class="box">
+  <h2>🧑‍🏫 五、教學用：DFS / BFS 搜尋函式（含詳細註解）</h2>
+  <p class="small">
+    下方程式碼與本頁運作一致，教師可用這段逐行講解（重點：狀態怎麼設計、DFS 回溯、BFS 隊列與層級展開）。
+  </p>
+  <div class="code-block" id="codeArea"></div>
+</div>
+
+<script>
+/* =========================
+   基本設定與地圖
+========================= */
+const SIZE = 7;
+const start = { r: 3, c: 3 };
+const dirs = [
+  { r:-1, c: 0 }, // 上
+  { r: 1, c: 0 }, // 下
+  { r: 0, c:-1 }, // 左
+  { r: 0, c: 1 }  // 右
+];
+const RAINBOW_NAMES = ["紅","橙","黃","綠","藍","靛","紫"];
+
+let map = [];
+let overlayMode = "none";         // none | search | best-dfs | best-bfs
+let overlayPath = [];             // for best path coloring
+let overlayHeadIndex = null;      // for head highlight
+let overlayVisited = null;        // for search samples (positions)
+let overlayVisitedIndex = null;   // current index for search animation
+
+let dfsRes = null;
+let bfsRes = null;
+
+let dfsTrace = [];
+let bfsTrace = [];
+
+let searchTimer = null;
+let bestTimer = null;
+
+function getMaxSteps(){
+  const v = Number(document.getElementById("maxSteps").value);
+  if (!Number.isFinite(v)) return 15;
+  return Math.max(1, Math.min(15, v));
+}
+
+function initMap(){
+  clearInterval(searchTimer);
+  clearInterval(bestTimer);
+
+  map = [];
+  for(let i=0;i<SIZE;i++){
+    const row=[];
+    for(let j=0;j<SIZE;j++){
+      row.push(Math.floor(Math.random()*7)-3);
+    }
+    map.push(row);
+  }
+  map[start.r][start.c] = 0;
+
+  dfsRes = null;
+  bfsRes = null;
+  dfsTrace = [];
+  bfsTrace = [];
+  document.getElementById("dfsTraceN").textContent = "0";
+  document.getElementById("bfsTraceN").textContent = "0";
+
+  setText("dfsBestCoin","-"); setText("dfsStates","-"); setText("dfsMs","-");
+  setText("bfsBestCoin","-"); setText("bfsStates","-"); setText("bfsMs","-");
+  clearLog("dfs"); clearLog("bfs");
+  setPlayProgress("dfs",0,0);
+  setPlayProgress("bfs",0,0);
+
+  overlayMode = "none";
+  overlayPath = [];
+  overlayHeadIndex = null;
+  overlayVisited = null;
+  overlayVisitedIndex = null;
+
+  drawMap();
+}
+
+function setText(id, text){ document.getElementById(id).textContent = text; }
+
+function clearLog(which){
+  document.getElementById(which==="dfs" ? "dfsLog":"bfsLog").textContent = "";
+}
+function appendLog(which, line){
+  const box = document.getElementById(which==="dfs" ? "dfsLog":"bfsLog");
+  box.textContent += line + "\n";
+  box.scrollTop = box.scrollHeight;
+}
+function setPlayProgress(which, step, total){
+  document.getElementById(which==="dfs" ? "dfsPlayStep":"bfsPlayStep").textContent = step;
+  document.getElementById(which==="dfs" ? "dfsPlayTotal":"bfsPlayTotal").textContent = total;
+}
+
+function cellClass(v){
+  if (v>0) return "positive";
+  if (v<0) return "negative";
+  return "zero";
+}
+function rainbowClassByIndex(idx){
+  return "rb" + (idx % 7);
+}
+
+/* =========================
+   ✅ 狀態壓縮：用 BigInt bitmask 記錄走過的格子
+   - 為什麼不用 visited[7][7]？
+     因為 DFS/BFS 都要在「不同路徑」下記錄不同 visited 狀態。
+     每個節點都有自己的 visited 狀態，用 bitmask 複製很方便也更快。
+   - 7×7=49 格，剛好用 49 個 bit 表示：走過=1，沒走過=0
+========================= */
+function bitIndex(r,c){ return BigInt(r*SIZE + c); }
+function setBit(mask, r, c){ return mask | (1n << bitIndex(r,c)); }
+function hasBit(mask, r, c){ return (mask & (1n << bitIndex(r,c))) !== 0n; }
+
+function drawMap(){
+  let html = "<table>";
+  for(let i=0;i<SIZE;i++){
+    html += "<tr>";
+    for(let j=0;j<SIZE;j++){
+      let cls = cellClass(map[i][j]);
+      const isStart = (i===start.r && j===start.c);
+      if (isStart) cls = "start";
+
+      // overlay: search sample
+      if (overlayMode === "search" && overlayVisited && overlayVisitedIndex !== null){
+        const pos = overlayVisited[overlayVisitedIndex];
+        if (pos && pos.r === i && pos.c === j){
+          cls = "head";
+          if (isStart) cls = "head start";
+        }
+      }
+
+      // overlay: best path (rainbow)
+      if (overlayMode === "best-dfs" || overlayMode === "best-bfs"){
+        if (overlayPath && overlayPath.length){
+          const idx = overlayPath.findIndex(p => p.r===i && p.c===j);
+          if (idx !== -1){
+            if (overlayHeadIndex !== null){
+              if (idx === overlayHeadIndex) cls = "head";
+              else if (idx < overlayHeadIndex) cls = rainbowClassByIndex(idx);
+            } else {
+              cls = rainbowClassByIndex(idx);
+            }
+            if (isStart && idx === 0){
+              if (overlayHeadIndex === 0) cls = "head start";
+              else cls = rainbowClassByIndex(0) + " start";
+            }
+          }
+        }
+      }
+
+      html += `<td class="${cls}">${map[i][j]}</td>`;
+    }
+    html += "</tr>";
+  }
+  html += "</table>";
+  document.getElementById("map").innerHTML = html;
+}
+
+/* =========================================================
+   ✅ DFS：找固定步數下最大金幣（不可重複走格）
+   =========================================================
+   教學重點（請老師可依序講解）：
+
+   1) DFS 的狀態包含：
+      - 位置 (r, c)
+      - 剩餘步數 stepsLeft
+      - 累積金幣 coins
+      - 走過哪些格子 visitedMask
+      - 目前路徑 path（用來記錄最佳路徑）
+
+   2) DFS 的核心流程：
+      - 終止條件：stepsLeft==0 → 比較 coins 是否更大
+      - 否則：嘗試四個方向
+      - 選一格前進 → 遞迴深入
+      - 回溯：把 path 與 visited 狀態還原
+
+   3) 為了讓學生「看到探索順序差異」，
+      我們另外做了一個 trace 取樣陣列，保存前幾個訪問到的節點座標。
+      ※ 注意：trace 只是概念動畫用，不影響答案正確性。
+========================================================= */
+function runDFSInternal(maxSteps){
+  // bestCoin / bestPath：記錄目前找到的最佳答案
+  let bestCoin = -Infinity;
+  let bestPath = [{r:start.r, c:start.c}];
+
+  // states：計算「展開次數」（可以拿來比較 DFS / BFS 工作量）
+  let states = 0;
+
+  // trace：取樣記錄 DFS 探索過的座標，用來做「探索順序」概念動畫
+  const trace = [];
+  const TRACE_LIMIT = 220; // 只取樣前 220 個點，避免太長造成卡頓
+
+  // visitedMask：bitmask 記錄此「路徑」走過哪些格子
+  let visitedMask = setBit(0n, start.r, start.c);
+
+  // path：目前正在走的路徑（會隨 DFS 深入與回溯而改變）
+  const path = [{r:start.r, c:start.c}];
+
+  // dfs(r, c, stepsLeft, coins) 表示：
+  // 「目前在 (r,c)，還能走 stepsLeft 步，已累積 coins 金幣」
+  function dfs(r,c,stepsLeft,coins){
+    states++;
+
+    // 取樣：記錄探索過的點（動畫用）
+    if (trace.length < TRACE_LIMIT) trace.push({r,c});
+
+    // 【終止條件】步數用完 → 更新最佳答案
+    if (stepsLeft === 0){
+      if (coins > bestCoin){
+        bestCoin = coins;
+        bestPath = path.slice(); // 複製目前路徑當作最佳路徑
+      }
+      return;
+    }
+
+    // 嘗試四個方向：上、下、左、右
+    for (const d of dirs){
+      const nr = r + d.r;
+      const nc = c + d.c;
+
+      // ① 邊界判斷：不能走出地圖
+      if (nr<0 || nr>=SIZE || nc<0 || nc>=SIZE) continue;
+
+      // ② 不可重複：走過的格子不能再走
+      if (hasBit(visitedMask, nr, nc)) continue;
+
+      // =========【前進：做選擇】=========
+      // 保存舊 mask，回溯時要還原
+      const oldMask = visitedMask;
+
+      // 標記 (nr,nc) 已走過
+      visitedMask = setBit(visitedMask, nr, nc);
+
+      // 把新位置加入路徑
+      path.push({r:nr, c:nc});
+
+      // ③ 遞迴深入：步數-1、金幣加上新格子的值
+      dfs(nr, nc, stepsLeft-1, coins + map[nr][nc]);
+
+      // =========【回溯：撤銷選擇】=========
+      // 把路徑退回上一格
+      path.pop();
+
+      // 還原 visitedMask，代表「回到上一層」的狀態
+      visitedMask = oldMask;
+    }
+  }
+
+  // 從起點開始，最多走 maxSteps 步，起點累積金幣為 0
+  dfs(start.r, start.c, maxSteps, 0);
+
+  return { bestCoin, bestPath, states, trace };
+}
+
+/* =========================================================
+   ✅ BFS：層級展開找固定步數下最大金幣（不可重複走格）
+   =========================================================
+   教學重點（老師可依序講解）：
+
+   1) BFS 的核心：
+      - 用 Queue（隊列）做「先進先出」
+      - 以「層」為單位擴展：距離 1、距離 2、距離 3...
+
+   2) 這裡的 BFS 是「固定步數展開」：
+      - 我們展開 maxSteps 層
+      - 每一層代表「又走了一步」
+      - 最後在第 maxSteps 層中，挑 coins 最大的節點當作最佳答案
+
+   3) 狀態怎麼存？
+      每個節點 node 需要：
+      - r, c：位置
+      - mask：走過哪些格子（不可重複）
+      - coins：累積金幣
+      - parent：指向上一個節點（方便重建路徑）
+        ※ 這樣就不需要在每個 node 都存整條 path（省記憶體）
+
+   4) BFS 的代價：
+      - 一次會把一整層的所有狀態都存起來
+      - 所以比 DFS 更吃記憶體
+========================================================= */
+function runBFSInternal(maxSteps){
+  let states = 0;
+
+  // trace：取樣記錄 BFS 探索過的座標（動畫用）
+  const trace = [];
+  const TRACE_LIMIT = 220;
+
+  // pool：節點池（所有節點都存在這裡，用 index 當指標）
+  // node: { r, c, mask, coins, parent }
+  const pool = [];
+
+  // 起點節點：coins=0、parent=-1（表示沒有上一個）
+  const startNode = {
+    r: start.r,
+    c: start.c,
+    mask: setBit(0n, start.r, start.c),
+    coins: 0,
+    parent: -1
+  };
+  pool.push(startNode);
+
+  // frontier：目前這一層的所有節點 index（第 0 層只有起點）
+  let frontier = [0];
+
+  // 逐層展開：每一圈代表走一步
+  for (let depth=0; depth<maxSteps; depth++){
+    const next = []; // 下一層節點集合
+
+    // 逐一取出「本層的所有節點」，並往外擴展
+    for (let idx of frontier){
+      states++;
+
+      // 取樣：記錄探索過的點（動畫用）
+      if (trace.length < TRACE_LIMIT) trace.push({r:pool[idx].r, c:pool[idx].c});
+
+      const node = pool[idx];
+
+      // 往四個方向擴展
+      for (const d of dirs){
+        const nr = node.r + d.r;
+        const nc = node.c + d.c;
+
+        // ① 邊界檢查
+        if (nr<0 || nr>=SIZE || nc<0 || nc>=SIZE) continue;
+
+        // ② 不可重複走格：如果這個格子在 node.mask 內，跳過
+        if (hasBit(node.mask, nr, nc)) continue;
+
+        // 建立子節點（走到新格子）
+        const child = {
+          r: nr,
+          c: nc,
+          mask: setBit(node.mask, nr, nc),       // child 的 visited 狀態
+          coins: node.coins + map[nr][nc],       // child 的累積金幣
+          parent: idx                             // 指向父節點（重建路徑用）
+        };
+
+        // 把 child 存入 pool，取得它的 index
+        const childIdx = pool.length;
+        pool.push(child);
+
+        // childIdx 加入 next（下一層）
+        next.push(childIdx);
+      }
+    }
+
+    // 本層做完後，把 frontier 換成 next → 下一圈（下一步）
+    frontier = next;
+
+    // 若下一層沒有任何節點，代表無路可走，提早停止
+    if (frontier.length === 0) break;
+  }
+
+  // BFS 展開完畢後：
+  // 理想狀況：frontier 是「剛好走了 maxSteps 步」的所有節點
+  // 我們要在這一層挑 coins 最大的節點作為答案（因為題目要最大金幣）
+  let bestNodeIdx = 0;
+  let bestCoin = -Infinity;
+
+  if (frontier.length > 0){
+    for (const idx of frontier){
+      if (pool[idx].coins > bestCoin){
+        bestCoin = pool[idx].coins;
+        bestNodeIdx = idx;
+      }
+    }
+  } else {
+    // 保底：若提早停止，改找 pool 全部中 coins 最大者
+    for (let i=0;i<pool.length;i++){
+      if (pool[i].coins > bestCoin){
+        bestCoin = pool[i].coins;
+        bestNodeIdx = i;
+      }
+    }
+  }
+
+  // 透過 parent 指標重建 bestPath
+  const bestPathRev = [];
+  let cur = bestNodeIdx;
+  while (cur !== -1){
+    bestPathRev.push({r:pool[cur].r, c:pool[cur].c});
+    cur = pool[cur].parent;
+  }
+  bestPathRev.reverse();
+
+  return { bestCoin, bestPath: bestPathRev, states, trace };
+}
+
+/* =========================
+   執行：同時 DFS + BFS
+========================= */
+function runBoth(){
+  clearInterval(searchTimer);
+  clearInterval(bestTimer);
+
+  const maxSteps = getMaxSteps();
+
+  // DFS
+  const t0 = performance.now();
+  const d = runDFSInternal(maxSteps);
+  const t1 = performance.now();
+  dfsRes = { ...d, ms: Math.round(t1 - t0) };
+  dfsTrace = d.trace;
+  document.getElementById("dfsTraceN").textContent = String(dfsTrace.length);
+
+  setText("dfsBestCoin", dfsRes.bestCoin);
+  setText("dfsStates", dfsRes.states);
+  setText("dfsMs", dfsRes.ms);
+
+  // BFS
+  const t2 = performance.now();
+  const b = runBFSInternal(maxSteps);
+  const t3 = performance.now();
+  bfsRes = { ...b, ms: Math.round(t3 - t2) };
+  bfsTrace = b.trace;
+  document.getElementById("bfsTraceN").textContent = String(bfsTrace.length);
+
+  setText("bfsBestCoin", bfsRes.bestCoin);
+  setText("bfsStates", bfsRes.states);
+  setText("bfsMs", bfsRes.ms);
+
+  overlayMode = "none";
+  overlayPath = [];
+  overlayHeadIndex = null;
+  overlayVisited = null;
+  overlayVisitedIndex = null;
+  drawMap();
+
+  renderBestLog("dfs");
+  renderBestLog("bfs");
+
+  // 更新教學程式碼區（把兩個函式的「註解版」顯示出來）
+  showTeachingCode();
+}
+
+function renderBestLog(which){
+  clearLog(which);
+  const res = which==="dfs" ? dfsRes : bfsRes;
+  if (!res){ appendLog(which, "（尚未執行）"); return; }
+
+  let running = 0;
+  const path = res.bestPath;
+
+  for (let i=0;i<path.length;i++){
+    const p = path[i];
+    const label = (i===0) ? "起點" : `第${i}步`;
+    const colorName = RAINBOW_NAMES[i % 7];
+
+    const got = (i===0) ? 0 : map[p.r][p.c];
+    const before = running;
+    running += got;
+    const gotText = (got >= 0) ? `+${got}` : `${got}`;
+
+    appendLog(which,
+      `${label} -> (${p.r}, ${p.c}) 〔色塊：${colorName}〕 ` +
+      `金幣：${gotText}  累積：${before} → ${running}`
+    );
+  }
+
+  setPlayProgress(which, 0, path.length);
+}
+
+function playBest(which){
+  clearInterval(bestTimer);
+  const res = which==="dfs" ? dfsRes : bfsRes;
+  if (!res){ alert("請先按「同時執行 DFS & BFS」"); return; }
+
+  overlayMode = (which==="dfs") ? "best-dfs" : "best-bfs";
+  overlayPath = res.bestPath.slice();
+  overlayHeadIndex = 0;
+  overlayVisited = null;
+  overlayVisitedIndex = null;
+
+  setPlayProgress(which, 0, overlayPath.length);
+
+  clearLog(which);
+  let running = 0;
+  const path = overlayPath;
+
+  bestTimer = setInterval(() => {
+    const i = overlayHeadIndex;
+    if (i === null) return;
+
+    drawMap();
+
+    if (i < path.length){
+      const p = path[i];
+      const label = (i===0) ? "起點" : `第${i}步`;
+      const colorName = RAINBOW_NAMES[i % 7];
+      const got = (i===0) ? 0 : map[p.r][p.c];
+      const before = running;
+      running += got;
+      const gotText = (got >= 0) ? `+${got}` : `${got}`;
+
+      appendLog(which,
+        `${label} -> (${p.r}, ${p.c}) 〔色塊：${colorName}〕 ` +
+        `金幣：${gotText}  累積：${before} → ${running}`
+      );
+
+      setPlayProgress(which, i+1, path.length);
+      overlayHeadIndex++;
+    } else {
+      overlayHeadIndex = null;
+      drawMap();
+      clearInterval(bestTimer);
+    }
+  }, 140);
+}
+
+function playSearch(kind){
+  clearInterval(searchTimer);
+  if (!dfsRes || !bfsRes){ alert("請先按「同時執行 DFS & BFS」"); return; }
+
+  overlayMode = "search";
+  overlayPath = [];
+  overlayHeadIndex = null;
+
+  overlayVisited = (kind==="dfs") ? dfsTrace : bfsTrace;
+  overlayVisitedIndex = 0;
+
+  drawMap();
+
+  searchTimer = setInterval(() => {
+    if (overlayVisitedIndex === null) return;
+    overlayVisitedIndex++;
+    if (overlayVisitedIndex >= overlayVisited.length){
+      clearInterval(searchTimer);
+      overlayVisitedIndex = overlayVisited.length - 1;
+      drawMap();
+      return;
+    }
+    drawMap();
+  }, 80);
+}
+
+/* =========================
+   顯示「教學用程式碼」（把註解內容展示給學生看）
+========================= */
+function showTeachingCode(){
+  // 這裡把函式本體用 toString 顯示（保留註解與縮排）
+  // 注意：不同瀏覽器可能在 toString 上略有差異，但一般都可以正確顯示。
+  const parts = [];
+  parts.push("/* ===== DFS（含詳細註解）===== */\n" + runDFSInternal.toString());
+  parts.push("\n\n/* ===== BFS（含詳細註解）===== */\n" + runBFSInternal.toString());
+  document.getElementById("codeArea").textContent = parts.join("\n");
+}
+
+/* =========================
+   初始化
+========================= */
+initMap();
+showTeachingCode();
+</script>
+
+</body>
+</html>

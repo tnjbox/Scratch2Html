@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>第7週：從隨機、貪婪到 Beam Search（21×21 找金幣）</title>
+<style>
+body{
+  font-family:"Microsoft JhengHei",sans-serif;
+  background:#f5f7fa;
+  padding:30px;
+  line-height:1.8;
+}
+h1,h2,h3{color:#1a73e8}
+.box{
+  background:#fff;
+  padding:16px;
+  border-left:6px solid #1a73e8;
+  border-radius:10px;
+  margin:18px 0;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+.hint{
+  background:#e8f0fe;
+  padding:10px;
+  border-left:5px solid #1a73e8;
+  border-radius:8px;
+  margin-top:10px;
+}
+.small{font-size:14px;color:#555}
+.mono{font-family:Consolas,monospace}
+
+.row{display:flex;gap:20px;flex-wrap:wrap}
+.panel{flex:1;min-width:380px}
+
+table{border-collapse:collapse}
+td{
+  width:26px;height:26px;
+  border:1px solid #777;
+  text-align:center;
+  font-size:12px;
+  user-select:none;
+}
+.pos{background:#c8f7c5}
+.neg{background:#f7c5c5}
+.zero{background:#eee}
+.start{background:#ffe066!important; border:2px solid #ff9800;}
+.head{background:#90caf9!important; border:2px solid #1565c0;}
+
+.rb0{background:#ff4d4f!important}
+.rb1{background:#ff7a45!important}
+.rb2{background:#ffd666!important}
+.rb3{background:#73d13d!important}
+.rb4{background:#40a9ff!important}
+.rb5{background:#597ef7!important}
+.rb6{background:#b37feb!important}
+
+.coords{
+  background:#0f172a;
+  color:#e2e8f0;
+  padding:12px;
+  border-radius:10px;
+  white-space:pre;
+  height:340px;
+  overflow:auto;
+  font-family:Consolas,monospace;
+}
+
+button{
+  background:#1a73e8;color:#fff;border:none;
+  padding:8px 14px;border-radius:6px;cursor:pointer;
+  margin-right:8px;margin-top:8px;
+}
+button:hover{background:#155fc0}
+button.secondary{
+  background:#475569;
+}
+button.secondary:hover{
+  background:#334155;
+}
+
+input[type="number"]{
+  width:84px;
+  padding:6px 8px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  margin-left:6px;
+}
+label{ margin-right:10px; }
+
+.code{
+  background:#0f172a;
+  color:#e2e8f0;
+  padding:14px;
+  border-radius:10px;
+  font-family:Consolas,monospace;
+  white-space:pre-wrap;
+  line-height:1.6;
+  overflow:auto;
+}
+</style>
+</head>
+
+<body>
+
+<h1>第7週：從隨機、貪婪到 Beam Search（21×21 找金幣）</h1>
+
+<div class="box">
+<h2>🎯 本週學習目標</h2>
+<ul>
+<li>理解為什麼「隨機」與「貪婪」在大地圖中表現不佳</li>
+<li>學會選擇更適合題目條件的演算法</li>
+<li>認識並實作 Beam Search（可調整 K）</li>
+<li>用 Beam Search 在 21×21 地圖中找高分路徑（100 步）</li>
+</ul>
+</div>
+
+<div class="box">
+<h2>一、題目環境（本週正式規格）</h2>
+<ul>
+<li>地圖大小：21 × 21</li>
+<li>每格金幣：-5 ～ +5</li>
+<li><b>金幣只能吃一次，但可以重複進入格子</b></li>
+<li>最多移動 100 步</li>
+</ul>
+
+<div class="hint">
+✅ 規則提醒：某格金幣只在「第一次進入」時增減；第二次起同格的金幣視為 0（不再加/扣）。<br/>
+✅ 但為了教學觀察：<b>地圖畫面永遠顯示「初始金幣數」</b>，不會被改寫成 0。
+</div>
+</div>
+
+<div class="box">
+<h2>二、第一種方法：隨機演算法（Random）</h2>
+<p class="mono"><b>「每一步隨機選一個可以走的方向」</b></p>
+<ul>
+<li>優點：好寫、一定跑得動</li>
+<li>缺點：容易吃到負分、繞圈、浪費步數</li>
+</ul>
+</div>
+
+<div class="box">
+<h2>三、第二種方法：貪婪演算法（Greedy）</h2>
+<p class="mono"><b>「每一步選下一格金幣最多的方向」</b></p>
+<ul>
+<li>優點：比隨機好、容易理解</li>
+<li>缺點：只看眼前，容易卡在局部區域或高分陷阱</li>
+</ul>
+<div class="hint">
+👉 隨機沒有方向；貪婪方向太短。接著我們學 Beam Search：同時保留多條路。
+</div>
+</div>
+
+<div class="box">
+<h2>四、Beam Search 最適合的原因（對應本題環境）</h2>
+<ul>
+<li>地圖大（21×21），DFS/BFS 全搜容易爆炸</li>
+<li>金幣只能吃一次 → 路徑「歷史」會影響未來分數</li>
+<li>Blockly/JS 需要「跑得動、寫得出來」</li>
+</ul>
+<p class="mono"><b>Beam Search：</b>每一步保留前 K 條有希望的路，淘汰其餘路徑，在有限資源下取得穩定高分。</p>
+<div class="hint small">
+💡 K（Beam Width）越大：通常越容易找到更高分，但計算量也越大。
+</div>
+</div>
+
+<div class="box">
+<h2>五、實作示範：21×21 地圖 + Beam Search（100 步）</h2>
+
+<div class="small mono">
+參數：步數 = <b>100</b>（固定）<br/>
+你可以調整：Beam Width K（預設 4）
+</div>
+
+<div style="margin-top:10px;">
+  <label class="small mono">
+    Beam Width K：
+    <input id="kInput" type="number" min="1" max="20" step="1" value="4" />
+  </label>
+  <button onclick="init()">🔄 重新產生地圖</button>
+  <button onclick="runBeam()">▶ 執行 Beam Search</button>
+</div>
+
+<div class="small mono" style="margin-top:8px;">
+本次結果：總金幣 <b><span id="scoreText">-</span></b>　
+不同座標數 <b><span id="uniqueText">-</span></b>　
+重複進入次數 <b><span id="revisitText">-</span></b>
+</div>
+
+<div class="row">
+  <div class="panel">
+    <h3>🗺️ 地圖（永遠顯示初始金幣）</h3>
+    <div id="map"></div>
+    <div class="hint small">
+      彩虹色塊是「最佳路徑經過的座標」。<br/>
+      注意：即使走過後金幣視為 0，畫面仍顯示原始金幣數，方便檢查路徑合理性。
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📍 最佳路徑歷程（只吃一次的正確計分）</h3>
+    <div id="log" class="coords"></div>
+  </div>
+</div>
+</div>
+
+<script>
+/* =========================
+   設定
+========================= */
+const SIZE = 21;
+const STEPS = 100;
+const start = { r: 10, c: 10 };
+const dirs = [
+  { r:-1, c: 0 }, // 上
+  { r: 1, c: 0 }, // 下
+  { r: 0, c:-1 }, // 左
+  { r: 0, c: 1 }  // 右
+];
+
+let baseMap = [];       // 初始地圖（金幣固定顯示）
+let bestPath = [];      // 最佳路徑座標序列
+
+/* =========================
+   工具
+========================= */
+function cellCls(v){
+  if (v > 0) return "pos";
+  if (v < 0) return "neg";
+  return "zero";
+}
+function clampInt(x, lo, hi){
+  x = Number(x);
+  if (!Number.isFinite(x)) return lo;
+  x = Math.floor(x);
+  return Math.max(lo, Math.min(hi, x));
+}
+function getK(){
+  const k = clampInt(document.getElementById("kInput").value, 1, 20);
+  document.getElementById("kInput").value = String(k);
+  return k;
+}
+
+/* =========================
+   初始化
+========================= */
+function init(){
+  baseMap = [];
+  for(let i=0;i<SIZE;i++){
+    const row=[];
+    for(let j=0;j<SIZE;j++){
+      row.push(Math.floor(Math.random()*11) - 5); // -5~+5
+    }
+    baseMap.push(row);
+  }
+  baseMap[start.r][start.c] = 0;
+
+  bestPath = [];
+  document.getElementById("log").textContent = "";
+  document.getElementById("scoreText").textContent = "-";
+  document.getElementById("uniqueText").textContent = "-";
+  document.getElementById("revisitText").textContent = "-";
+  drawMap();
+}
+
+/* =========================
+   繪圖（地圖永遠顯示 baseMap）
+   路徑用彩虹色塊標示，但不改數字
+========================= */
+function drawMap(){
+  const m = baseMap;
+
+  let html="<table>";
+  for(let i=0;i<SIZE;i++){
+    html+="<tr>";
+    for(let j=0;j<SIZE;j++){
+      let cls = cellCls(m[i][j]);
+
+      if (i===start.r && j===start.c) cls = "start";
+
+      const idx = bestPath.findIndex(p => p.r===i && p.c===j);
+      if (idx >= 0){
+        cls = "rb" + (idx % 7);
+        if (i===start.r && j===start.c) cls = "rb0 start";
+      }
+
+      html += `<td class="${cls}">${m[i][j]}</td>`;
+    }
+    html+="</tr>";
+  }
+  html+="</table>";
+  document.getElementById("map").innerHTML = html;
+}
+
+/* =========================
+   Heuristic：附近正金幣估計值（只看 baseMap）
+   這是「方向感」，不是實際得分
+========================= */
+function neighborPositiveSum(r,c){
+  let s = 0;
+  for(const d of dirs){
+    const nr=r+d.r, nc=c+d.c;
+    if(nr>=0 && nr<SIZE && nc>=0 && nc<SIZE){
+      if (baseMap[nr][nc] > 0) s += baseMap[nr][nc];
+    }
+  }
+  return s;
+}
+
+/* =========================
+   Beam Search 評分函數
+   score = coins（真實已得分）
+         + heuristic（附近正分估計）
+         - 重訪懲罰（避免繞圈）
+
+   ★ 修正兩格反覆來回的關鍵之一：
+     重訪次數越多，分數越被扣，避免浪費步數。
+========================= */
+function scorePath(p){
+  const heuristic = neighborPositiveSum(p.r, p.c);
+
+  // 重複走格次數 = route 長度 - visited unique 數量
+  const revisits = p.route.length - p.visited.size;
+
+  // 懲罰係數可調：越大越不愛繞圈
+  const revisitPenalty = 2.2 * revisits;
+
+  return p.coins + heuristic - revisitPenalty;
+}
+
+/* =========================
+   Beam Search（可調 K）
+   ✅ 金幣只在第一次進入時計分（visited 控制）
+   ✅ 禁止立即折返（避免 A<->B 來回）
+========================= */
+function runBeam(){
+  const K = getK();
+
+  // path state:
+  // r,c        目前位置
+  // coins      實際得分（只吃一次）
+  // visited    Set：哪些座標的金幣已被吃過（用於得分判斷）
+  // route      走過的座標序列（用於輸出與防立即折返）
+  let paths = [{
+    r: start.r,
+    c: start.c,
+    coins: 0,
+    visited: new Set([`${start.r},${start.c}`]),
+    route: [{...start}]
+  }];
+
+  for(let step=0; step<STEPS; step++){
+    const next = [];
+
+    for(const p of paths){
+      const routeLen = p.route.length;
+
+      // 禁止立即折返：如果新位置等於「上上一步」，就跳過
+      const prev = p.route[routeLen-1];
+      const prevPrev = (routeLen >= 2) ? p.route[routeLen-2] : null;
+
+      for(const d of dirs){
+        const nr = p.r + d.r;
+        const nc = p.c + d.c;
+        if(nr<0 || nr>=SIZE || nc<0 || nc>=SIZE) continue;
+
+        if (prevPrev && nr === prevPrev.r && nc === prevPrev.c){
+          continue; // ✅ 不允許 A->B->A 立即折返
+        }
+
+        const key = `${nr},${nc}`;
+        const alreadyTaken = p.visited.has(key);
+
+        // ✅ 第一次進入才加/扣金幣，之後 gain = 0
+        const gain = alreadyTaken ? 0 : baseMap[nr][nc];
+
+        // 各分支要有自己的 visited（不能共用）
+        const v = new Set(p.visited);
+        v.add(key);
+
+        next.push({
+          r: nr,
+          c: nc,
+          coins: p.coins + gain,
+          visited: v,
+          route: [...p.route, {r:nr, c:nc}]
+        });
+      }
+    }
+
+    // 依評分排序，保留前 K 條
+    next.sort((a,b) => scorePath(b) - scorePath(a));
+    paths = next.slice(0, K);
+
+    if (paths.length === 0) break; // 保底
+  }
+
+  // 最終以「實際得分 coins」挑最佳
+  paths.sort((a,b) => b.coins - a.coins);
+  const best = paths[0];
+
+  bestPath = best.route;
+  drawMap();
+
+  // 輸出歷程：只吃一次（用 eaten Set 控制）
+  renderLog(bestPath);
+}
+
+/* =========================
+   歷程輸出（只吃一次的正確計分）
+========================= */
+function renderLog(route){
+  const lines = [];
+  let total = 0;
+
+  // eaten 記錄「金幣是否已吃過」
+  const eaten = new Set();
+  for (let i=0; i<route.length; i++){
+    const p = route[i];
+    const key = `${p.r},${p.c}`;
+
+    // ✅ 若吃過，gain = 0；第一次才使用 baseMap 值
+    const gain = (i===0) ? 0 : (eaten.has(key) ? 0 : baseMap[p.r][p.c]);
+    if (i !== 0) eaten.add(key);
+
+    const before = total;
+    total += gain;
+
+    const tag = (i===0) ? "起點" : `第${i}步`;
+    const gotText = (gain>=0) ? `+${gain}` : `${gain}`;
+    const colorName = ["紅","橙","黃","綠","藍","靛","紫"][i % 7];
+
+    const extra = (i!==0 && eaten.has(key) && gain===0 && baseMap[p.r][p.c]!==0)
+      ? "（已吃過→本次不計分）"
+      : "";
+
+    lines.push(`${tag} (${p.r},${p.c}) 〔色塊：${colorName}〕 金幣 ${gotText}  累積 ${before} → ${total}${extra}`);
+  }
+
+  // 統計
+  const uniqueCount = new Set(route.map(p => `${p.r},${p.c}`)).size;
+  const revisits = route.length - uniqueCount;
+
+  lines.push("");
+  lines.push("— 統計 —");
+  lines.push(`路徑長度（含起點）: ${route.length}`);
+  lines.push(`不同座標數: ${uniqueCount}`);
+  lines.push(`重複進入次數: ${revisits}`);
+  lines.push(`最終總金幣: ${total}`);
+
+  document.getElementById("log").textContent = lines.join("\n");
+  document.getElementById("scoreText").textContent = String(total);
+  document.getElementById("uniqueText").textContent = String(uniqueCount);
+  document.getElementById("revisitText").textContent = String(revisits);
+}
+
+init();
+</script>
+
+<!-- =====================================================
+     教學補充：Beam Search 演算法程式解析（教師用）
+===================================================== -->
+<div class="box">
+<h2>六、Beam Search 演算法程式解析（教師講解用）</h2>
+
+<p class="mono">
+核心精神一句話：<br/>
+<b>「同時保留多條有希望的路，每一步淘汰表現不好的。」</b>
+</p>
+
+<h3>1) 為什麼 K（Beam Width）會影響結果？</h3>
+<ul>
+<li><b>K 小</b>：跑很快，但容易錯過更好的路（像只挑少數候選）</li>
+<li><b>K 大</b>：同時保留更多可能性，通常能找到更高分，但計算量更大</li>
+</ul>
+<div class="hint small">
+教學建議：先用 K=1 讓學生看到「幾乎變成貪婪」，再調到 K=4 或 K=8 對照分數差異。
+</div>
+
+<h3>2) 本題 path（路徑）資料結構</h3>
+<ul class="mono">
+<li><b>r, c</b>：目前位置</li>
+<li><b>coins</b>：已取得的實際分數（只吃一次）</li>
+<li><b>visited</b>：Set，記錄已吃過金幣的座標</li>
+<li><b>route</b>：完整路徑座標序列（用於輸出與防折返）</li>
+</ul>
+
+<h3>3) 為什麼「金幣只能吃一次」要用 visited？</h3>
+<div class="code">
+const key = `${nr},${nc}`;
+const alreadyTaken = p.visited.has(key);
+const gain = alreadyTaken ? 0 : baseMap[nr][nc];
+</div>
+<p class="small">
+第一次進入才會把 baseMap 的值加進 coins；第二次起 gain=0，不再重複加分或扣分。
+</p>
+
+<h3>4) 為什麼要「禁止立即折返」？</h3>
+<div class="code">
+if (prevPrev && nr === prevPrev.r && nc === prevPrev.c){
+  continue; // 不允許 A->B->A 立即折返
+}
+</div>
+<p class="small">
+避免出現 A↔B 兩格來回浪費步數的 2-cycle。
+</p>
+
+<h3>5) 評分函數 scorePath 的作用</h3>
+<div class="code">
+score = coins + neighborPositiveSum - revisitPenalty
+</div>
+<ul>
+<li><b>coins</b>：真實分數（已吃到的金幣）</li>
+<li><b>neighborPositiveSum</b>：附近正金幣估計值（提供方向感）</li>
+<li><b>revisitPenalty</b>：重訪懲罰（避免繞圈浪費步數）</li>
+</ul>
+
+<h3>6) 每一步的 Beam 操作（保留前 K 名）</h3>
+<div class="code">
+next.sort((a,b) => scorePath(b) - scorePath(a));
+paths = next.slice(0, K);
+</div>
+<p class="small">
+每一步把所有候選路徑 next 排序後，只保留前 K 條，這就是 Beam Search 的「寬度限制」。
+</p>
+
+<div class="hint">
+<b>老師可用一句話總結：</b><br/>
+「K 越大，同時保留的可能性越多，越不容易走錯；但也越花時間。」
+</div>
+</div>
+
+</body>
+</html>

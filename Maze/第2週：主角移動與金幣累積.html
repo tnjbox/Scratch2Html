@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2週：主角移動、金幣累積與步數統計</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #f5f7fa;
+    color: #222;
+    padding: 30px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    color: #1a73e8;
+  }
+  table {
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  td {
+    border: 1px solid #888;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .positive { background-color: #d0f5c7; }
+  .negative { background-color: #fcd6d6; }
+  .zero { background-color: #f0f0f0; }
+  .player {
+    background-color: #ffe066 !important;
+    border: 2px solid #ff9800;
+  }
+  .info-box {
+    background: #e8f0fe;
+    padding: 10px;
+    margin: 15px 0;
+    border-left: 5px solid #1a73e8;
+  }
+  .code-block {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 10px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-family: "Courier New", monospace;
+    overflow-x: auto;
+  }
+</style>
+</head>
+<body>
+  <h1>🏃‍♂️ 第2週：主角移動、金幣累積與步數統計</h1>
+
+  <h2>🎯 學習目標</h2>
+  <ul>
+    <li>理解「座標 (row, col)」與地圖位置的關係</li>
+    <li>能用方向鍵控制主角上下左右移動</li>
+    <li>能即時顯示「座標」、「金幣累積」與「步數」</li>
+    <li>了解邊界條件：主角不能走出地圖</li>
+  </ul>
+
+  <h2>📘 一、座標的概念</h2>
+  <p>地圖上的每個位置都有一組座標 (列, 行)，  
+  通常以左上角為 (0,0)，右下角為 (6,6)。</p>
+  <p>例如主角起點在 (3,3)：</p>
+  <ul>
+    <li>上鍵：row - 1</li>
+    <li>下鍵：row + 1</li>
+    <li>左鍵：col - 1</li>
+    <li>右鍵：col + 1</li>
+  </ul>
+
+  <h2>💡 二、程式說明</h2>
+  <p>本週程式會顯示「累積金幣」與「步數」，並透過方向鍵移動主角。</p>
+
+  <div class="info-box">
+    <b>目前座標：</b> <span id="pos">(3, 3)</span><br>
+    <b>累積金幣總數：</b> <span id="totalCoin">0</span><br>
+    <b>已走步數：</b> <span id="steps">0</span>
+  </div>
+
+  <div id="map-area"></div>
+
+  <p>👉 使用鍵盤方向鍵 ↑ ↓ ← → 控制主角移動！</p>
+
+  <script>
+    // === 地圖設定 ===
+    const SIZE = 7;
+    let map = [];
+    let player = { row: 3, col: 3 }; // 主角起點
+    let totalCoin = 0;
+    let steps = 0; // 記錄已走步數
+
+    // === 生成隨機金幣地圖 ===
+    for (let i = 0; i < SIZE; i++) {
+      let row = [];
+      for (let j = 0; j < SIZE; j++) {
+        let coin = Math.floor(Math.random() * 7) - 3; // -3 ~ 3
+        row.push(coin);
+      }
+      map.push(row);
+    }
+    map[player.row][player.col] = 0; // 出發點金幣固定為0
+
+    // === 顯示地圖 ===
+    function drawMap() {
+      let html = "<table>";
+      for (let i = 0; i < SIZE; i++) {
+        html += "<tr>";
+        for (let j = 0; j < SIZE; j++) {
+          let coin = map[i][j];
+          let cls = coin > 0 ? "positive" : (coin < 0 ? "negative" : "zero");
+          if (i === player.row && j === player.col) cls += " player";
+          html += `<td class="${cls}">${coin}</td>`;
+        }
+        html += "</tr>";
+      }
+      html += "</table>";
+      document.getElementById("map-area").innerHTML = html;
+
+      // 更新資訊欄（不再顯示目前格子金幣）
+      document.getElementById("pos").textContent = `(${player.row}, ${player.col})`;
+      document.getElementById("totalCoin").textContent = totalCoin;
+      document.getElementById("steps").textContent = steps;
+    }
+
+    // === 處理鍵盤移動 ===
+    document.addEventListener("keydown", function(event) {
+      let newRow = player.row;
+      let newCol = player.col;
+
+      if (event.key === "ArrowUp") newRow--;
+      else if (event.key === "ArrowDown") newRow++;
+      else if (event.key === "ArrowLeft") newCol--;
+      else if (event.key === "ArrowRight") newCol++;
+      else return; // 不是方向鍵就忽略
+
+      // 邊界檢查
+      if (newRow < 0 || newRow >= SIZE || newCol < 0 || newCol >= SIZE) {
+        alert("🚫 到達邊界，不能再前進！");
+        return;
+      }
+
+      // 累加金幣
+      totalCoin += map[newRow][newCol];
+
+      // 把該格金幣清空，避免重複撿取
+      map[newRow][newCol] = 0;
+
+      // 更新主角位置與步數
+      player.row = newRow;
+      player.col = newCol;
+      steps++; // 每次有效移動步數 +1
+
+      // 重新畫出地圖
+      drawMap();
+    });
+
+    // === 初次顯示地圖 ===
+    drawMap();
+  </script>
+
+  <h2>🧩 四、延伸任務</h2>
+  <ol>
+    <li>加入「最大步數」限制，例如最多只能移動15步。</li>
+    <li>走完15步後，顯示「遊戲結束」訊息。</li>
+    <li>思考：如果要顯示「剩餘步數」要如何修改？</li>
+  </ol>
+</body>
+</html>

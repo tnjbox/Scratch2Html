@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>第4週：從 Brute Force 到 DFS（最佳路徑彩虹顯示＋金幣變化）</title>
+<style>
+  body{
+    font-family:"Microsoft JhengHei", sans-serif;
+    background:#f5f7fa;
+    padding:30px;
+    line-height:1.7;
+    color:#222;
+  }
+  h1,h2,h3{ color:#1a73e8; margin: 10px 0; }
+
+  .box{
+    background:#fff;
+    border-left:5px solid #1a73e8;
+    padding:14px 16px;
+    margin:14px 0;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
+  .hint{
+    background:#e8f0fe;
+    border-left:5px solid #1a73e8;
+    padding:10px 12px;
+    border-radius:8px;
+    margin-top:10px;
+  }
+  .small{ font-size:14px; color:#555; }
+  .mono{ font-family:Consolas, "Courier New", monospace; }
+
+  .row{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .panel{
+    flex: 1 1 360px;
+    min-width: 340px;
+  }
+
+  button{
+    background:#1a73e8;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-right:8px;
+    margin-top: 6px;
+  }
+  button:hover{ background:#155fc0; }
+
+  table{ border-collapse:collapse; margin-top:10px; }
+  td{
+    width:45px; height:45px;
+    border:1px solid #777;
+    text-align:center;
+    font-weight:bold;
+    font-size:16px;
+    user-select: none;
+  }
+
+  /* 地圖底色（正負零） */
+  .positive{ background:#c8f7c5; }
+  .negative{ background:#f7c5c5; }
+  .zero{ background:#eee; }
+
+  /* 起點與播放頭 */
+  .start{
+    background:#ffe066 !important;
+    border:2px solid #ff9800;
+  }
+  .bestHead{
+    background:#90caf9 !important;
+    border:2px solid #1565c0;
+  }
+
+  /* 彩虹七色（路徑色塊） */
+  .rb0{ background:#ff4d4f !important; color:#111; } /* 紅 */
+  .rb1{ background:#ff7a45 !important; color:#111; } /* 橙 */
+  .rb2{ background:#ffd666 !important; color:#111; } /* 黃 */
+  .rb3{ background:#73d13d !important; color:#111; } /* 綠 */
+  .rb4{ background:#40a9ff !important; color:#111; } /* 藍 */
+  .rb5{ background:#597ef7 !important; color:#111; } /* 靛 */
+  .rb6{ background:#b37feb !important; color:#111; } /* 紫 */
+
+  .legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+    align-items:center;
+  }
+  .swatch{
+    width:18px; height:18px;
+    border:1px solid rgba(0,0,0,.25);
+    border-radius:4px;
+    display:inline-block;
+    vertical-align:middle;
+  }
+
+  .code-block{
+    background:#0f172a;
+    color:#e2e8f0;
+    padding:12px;
+    border-radius:10px;
+    overflow:auto;
+    font-family:Consolas, "Courier New", monospace;
+    white-space:pre-wrap;
+    line-height:1.5;
+  }
+
+  .coords{
+    background:#0f172a;
+    color:#e2e8f0;
+    border-radius:10px;
+    padding:12px;
+    min-height:260px;
+    max-height:360px;
+    overflow:auto;
+    font-family:Consolas, "Courier New", monospace;
+    white-space:pre;
+  }
+</style>
+</head>
+
+<body>
+<h1>🔍 第4週：從窮舉搜尋（Brute Force）到 DFS 全搜尋找最大金幣路徑</h1>
+
+<!-- =========================
+     一、Brute Force 解說（不放程式碼）
+========================= -->
+<div class="box">
+  <h2>📘 一、先認識窮舉搜尋（Brute Force）</h2>
+  <p>
+    在「找金幣」這題中，主角每一步可以往 <b>上、下、左、右</b> 走。
+    如果我們想要「一定找到最多金幣的走法」，最直覺的方法就是：
+  </p>
+  <p><b>把所有可能路線都試一次 → 比較哪一條金幣最多。</b></p>
+
+  <h3>🧠 為什麼窮舉會爆炸？</h3>
+  <ul>
+    <li>每一步最多有 4 種選擇（上/下/左/右）</li>
+    <li>最多走 15 步 → 可能路線數量大約是 <span class="mono">4<sup>15</sup></span></li>
+  </ul>
+  <p>
+    <b class="mono">4<sup>15</sup> = 1,073,741,824</b>（超過 10 億！）<br/>
+    這種「選擇數量快速爆炸」的現象叫做 <b>爆炸性成長</b>。在實務上不實用。
+  </p>
+
+  <div class="hint small">
+    ✅ 本週重點：我們改用 DFS 的「遞迴 + 回溯」方式，把所有可能路線用更有結構的方法走完，
+    同時記錄目前最好的答案。
+  </div>
+</div>
+
+<!-- =========================
+     二、DFS 概念介紹
+========================= -->
+<div class="box">
+  <h2>💡 二、什麼是 DFS（深度優先搜尋）？</h2>
+  <p>
+    DFS（Depth-First Search）是一種搜尋方法，它的特色是：
+  </p>
+  <p><b>先選一條路一路走到底 → 走不下去就退回（回溯）→ 再換另一條路。</b></p>
+
+  <h3>🧩 DFS 的 3 個核心概念</h3>
+  <ol>
+    <li><b>遞迴（Recursion）</b>：函式呼叫自己，繼續往下一步。</li>
+    <li><b>回溯（Backtracking）</b>：走到底後，把「做過的選擇撤銷」，回到岔路換方向。</li>
+    <li><b>全搜尋</b>：把所有可能都試過，最後一定能找出最佳解。</li>
+  </ol>
+
+  <h3>🏫 生活比喻</h3>
+  <p>
+    像走迷宮：先走某條路走到底，遇到死路再回頭，換另一條岔路繼續。
+  </p>
+</div>
+
+<!-- =========================
+     三、DFS 套用到找金幣：程式碼如何寫（教學用片段）
+========================= -->
+<div class="box">
+  <h2>🪙 三、把 DFS 套用到「找金幣」題目：程式碼怎麼寫？</h2>
+
+  <h3>✅ DFS 需要記錄哪些「狀態」？</h3>
+  <ul>
+    <li><b>目前位置</b>：row, col（主角在哪裡）</li>
+    <li><b>剩餘步數</b>：stepsLeft（最多 15 步，每走一步就 -1）</li>
+    <li><b>累積金幣</b>：coins（目前走到這裡拿到多少）</li>
+    <li><b>是否走過</b>：visited（避免同一格一直來回刷）</li>
+    <li><b>目前路徑</b>：path（用來記錄最佳路線）</li>
+  </ul>
+
+  <h3>💻 DFS 教學用核心程式碼片段</h3>
+  <div class="code-block">
+function dfs(row, col, stepsLeft, coins, path) {
+  // ① 終止條件：步數用完，更新最大值
+  if (stepsLeft === 0) {
+    if (coins > maxCoin) {
+      maxCoin = coins;            // 記錄最大金幣
+      bestPath = path.slice();    // 記錄最佳路徑（複製）
+    }
+    return;
+  }
+
+  // ② 嘗試四個方向：上、下、左、右
+  for (let dir of directions) {
+    let nr = row + dir.r;
+    let nc = col + dir.c;
+
+    // ③ 邊界檢查：不能走出地圖
+    if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+
+    // ④ 避免重複：走過的格子不再走
+    if (visited[nr][nc]) continue;
+
+    // ⑤ 前進（做選擇）
+    visited[nr][nc] = true;
+    path.push({r:nr, c:nc});
+
+    // ⑥ 遞迴：繼續往下一步走
+    dfs(nr, nc, stepsLeft-1, coins + map[nr][nc], path);
+
+    // ⑦ 回溯：撤銷選擇，回到上一層
+    path.pop();
+    visited[nr][nc] = false;
+  }
+}
+  </div>
+
+  <div class="hint small">
+    🔑 教師講解抓重點：
+    「做選擇 → 遞迴往下 → 回溯撤銷」就是 DFS 的靈魂。
+  </div>
+</div>
+
+<!-- =========================
+     四、互動示範：DFS 算最佳路徑 + 播放座標 + 最後彩虹路徑色塊
+========================= -->
+<div class="box">
+  <h2>🕹️ 四、DFS 示範：找出最大金幣路徑（最後用彩虹色顯示＋金幣變化）</h2>
+
+  <button onclick="runDFS()">🚀 執行 DFS（算最佳路徑）</button>
+  <button onclick="initMap()">🔄 重新產生地圖</button>
+
+  <label class="small">
+    <input type="checkbox" id="animateBest" checked />
+    播放最佳路徑（同步逐步顯示座標）
+  </label>
+
+  <p>
+    <b>最大金幣：</b> <span id="maxCoin" class="mono">0</span><br/>
+    <b>最佳路徑長度：</b> <span id="bestLen" class="mono">0</span>（含起點）<br/>
+    <b>步數限制：</b> 15（最多走 15 步、經過最多 16 個座標）
+  </p>
+
+  <div class="row">
+    <div class="panel">
+      <h3>🗺️ 地圖</h3>
+      <div id="map"></div>
+
+      <div class="legend small">
+        <span class="swatch start"></span> 起點　
+        <span class="swatch bestHead"></span> 播放中目前位置　
+        <span class="small">最後最佳路徑：彩虹七色（紅橙黃綠藍靛紫）循環</span>
+      </div>
+
+      <div class="legend small" style="margin-top:8px;">
+        <span class="swatch rb0"></span>
+        <span class="swatch rb1"></span>
+        <span class="swatch rb2"></span>
+        <span class="swatch rb3"></span>
+        <span class="swatch rb4"></span>
+        <span class="swatch rb5"></span>
+        <span class="swatch rb6"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>📍 最佳路徑歷程（逐步顯示：座標＋色塊＋金幣變化）</h3>
+      <div class="small">
+        目前播放：<span id="playStep" class="mono">0</span>/<span id="playTotal" class="mono">0</span>
+      </div>
+      <div id="coords" class="coords"></div>
+      <div class="hint small">
+        提醒：第 0 行是「起點」。第 1 行開始才是「走第 1 步到達的位置」。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SIZE = 7;
+  const MAX_STEPS = 15;
+  const start = { r: 3, c: 3 };
+  const dirs = [
+    { r:-1, c: 0 }, // 上
+    { r: 1, c: 0 }, // 下
+    { r: 0, c:-1 }, // 左
+    { r: 0, c: 1 }  // 右
+  ];
+
+  let map = [];
+  let visited = [];
+  let bestPath = [];
+  let maxCoin = -Infinity;
+
+  function initMap(){
+    map = [];
+    for(let i=0;i<SIZE;i++){
+      const row=[];
+      for(let j=0;j<SIZE;j++){
+        row.push(Math.floor(Math.random()*7)-3); // -3~3
+      }
+      map.push(row);
+    }
+    map[start.r][start.c] = 0;
+
+    bestPath = [];
+    maxCoin = -Infinity;
+
+    updateStats(0,0);
+    clearCoords();
+    drawMap(false, null);
+  }
+
+  function updateStats(mc, len){
+    document.getElementById("maxCoin").textContent = mc;
+    document.getElementById("bestLen").textContent = len;
+  }
+
+  function setPlayProgress(step, total){
+    document.getElementById("playStep").textContent = step;
+    document.getElementById("playTotal").textContent = total;
+  }
+
+  function clearCoords(){
+    document.getElementById("coords").textContent = "";
+    setPlayProgress(0, 0);
+  }
+
+  function appendCoordLine(line){
+    const box = document.getElementById("coords");
+    box.textContent += line + "\n";
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function cellClass(v){
+    if (v>0) return "positive";
+    if (v<0) return "negative";
+    return "zero";
+  }
+
+  // 彩虹色 class：依序紅橙黃綠藍靛紫，超過就循環
+  function rainbowClassByIndex(idx){
+    return "rb" + (idx % 7);
+  }
+
+  /**
+   * drawMap(showBest, headIndex)
+   * showBest=false：只顯示地圖
+   * showBest=true：
+   *  - headIndex!=null：播放中 → head 用 bestHead，已經走過的（<headIndex）用彩虹色
+   *  - headIndex==null：播放完 → 整條 bestPath 用彩虹色
+   */
+  function drawMap(showBest=false, headIndex=null){
+    let html="<table>";
+    for(let i=0;i<SIZE;i++){
+      html+="<tr>";
+      for(let j=0;j<SIZE;j++){
+        let cls = cellClass(map[i][j]);
+        const isStart = (i===start.r && j===start.c);
+
+        // 起點底色
+        if (isStart) cls = "start";
+
+        if (showBest && bestPath.length>0){
+          const idx = bestPath.findIndex(p => p.r===i && p.c===j);
+          if (idx !== -1) {
+            if (headIndex !== null) {
+              if (idx === headIndex) cls = "bestHead";
+              else if (idx < headIndex) cls = rainbowClassByIndex(idx);
+            } else {
+              cls = rainbowClassByIndex(idx);
+            }
+          }
+
+          // 起點加上邊框辨識
+          if (isStart && idx === 0) {
+            if (headIndex === 0) cls = "bestHead start";
+            if (headIndex === null) cls = rainbowClassByIndex(0) + " start";
+          }
+        }
+
+        html += `<td class="${cls}">${map[i][j]}</td>`;
+      }
+      html+="</tr>";
+    }
+    html+="</table>";
+    document.getElementById("map").innerHTML = html;
+  }
+
+  // DFS：快速跑（不顯示搜尋歷程）
+  function dfs(r, c, stepsLeft, coins, path){
+    if (stepsLeft === 0){
+      if (coins > maxCoin){
+        maxCoin = coins;
+        bestPath = path.slice();
+      }
+      return;
+    }
+
+    for (const d of dirs){
+      const nr = r + d.r;
+      const nc = c + d.c;
+      if (nr<0 || nr>=SIZE || nc<0 || nc>=SIZE) continue;
+      if (visited[nr][nc]) continue;
+
+      visited[nr][nc] = true;
+      path.push({r:nr, c:nc});
+      dfs(nr, nc, stepsLeft-1, coins + map[nr][nc], path);
+      path.pop();
+      visited[nr][nc] = false;
+    }
+  }
+
+  // 播放最佳路徑：同步逐步顯示「座標＋色塊＋每步金幣＋累積變化」
+  async function animateBestPath(){
+    clearCoords();
+    setPlayProgress(0, bestPath.length);
+
+    let running = 0; // 累積金幣
+
+    for (let i=0; i<bestPath.length; i++){
+      drawMap(true, i);
+
+      const p = bestPath[i];
+      const label = (i===0) ? "起點" : `第${i}步`;
+      const colorName = ["紅","橙","黃","綠","藍","靛","紫"][i % 7];
+
+      // 每步撿到的金幣（起點固定 0）
+      const got = (i===0) ? 0 : map[p.r][p.c];
+      const before = running;
+      running += got;
+
+      const gotText = (got >= 0) ? `+${got}` : `${got}`;
+      appendCoordLine(
+        `${label} -> (${p.r}, ${p.c}) 〔色塊：${colorName}〕 ` +
+        `金幣：${gotText}  累積：${before} → ${running}`
+      );
+
+      setPlayProgress(i+1, bestPath.length);
+      await sleep(140);
+    }
+
+    // 播放完：整條路徑彩虹上色
+    drawMap(true, null);
+  }
+
+  async function runDFS(){
+    visited = Array.from({length: SIZE}, () => Array(SIZE).fill(false));
+    visited[start.r][start.c] = true;
+
+    maxCoin = -Infinity;
+    bestPath = [{r:start.r, c:start.c}];
+
+    dfs(start.r, start.c, MAX_STEPS, 0, [{r:start.r, c:start.c}]);
+
+    updateStats(maxCoin, bestPath.length);
+
+    const animate = document.getElementById("animateBest").checked;
+    if (animate) {
+      await animateBestPath();
+    } else {
+      // 不播放也要顯示完整歷程（含金幣變化）
+      clearCoords();
+      setPlayProgress(bestPath.length, bestPath.length);
+
+      let running = 0;
+      for (let i=0;i<bestPath.length;i++){
+        const p = bestPath[i];
+        const label = (i===0) ? "起點" : `第${i}步`;
+        const colorName = ["紅","橙","黃","綠","藍","靛","紫"][i % 7];
+
+        const got = (i===0) ? 0 : map[p.r][p.c];
+        const before = running;
+        running += got;
+
+        const gotText = (got >= 0) ? `+${got}` : `${got}`;
+        appendCoordLine(
+          `${label} -> (${p.r}, ${p.c}) 〔色塊：${colorName}〕 ` +
+          `金幣：${gotText}  累積：${before} → ${running}`
+        );
+      }
+
+      drawMap(true, null);
+    }
+
+    alert(`✅ DFS 計算完成！\n最大金幣：${maxCoin}\n最佳路徑長度（含起點）：${bestPath.length}`);
+  }
+
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  initMap();
+</script>
+
+</body>
+</html>
