@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>6×6 UDLR 優化任務：固定地圖＋任務下拉＋目標判定</title>
+  <style>
+    :root{
+      --cell: 56px;
+      --gap: 8px;
+      --border: #d9d9d9;
+      --bg: #ffffff;
+      --ink: #222;
+      --muted: #666;
+      --panel: #f6f7f9;
+
+      --start: #d8f5d8;
+      --goal:  #dbe7ff;
+      --path:  #ffe7b5;
+
+      --wall-bg: #e9e9e9;
+      --wall-br: #bcbcbc;
+
+      --cur-outline: #ff6b6b;
+    }
+
+    body{
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      margin: 0;
+      padding: 16px;
+    }
+
+    .wrap{
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .board, .side{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    h1{ font-size: 18px; margin: 0 0 8px; }
+    .hint{ color: var(--muted); font-size: 13px; line-height: 1.45; margin: 8px 0 12px; }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 28px repeat(6, var(--cell));
+      grid-template-rows: 28px repeat(6, var(--cell));
+      gap: var(--gap);
+      user-select: none;
+    }
+    .axis{
+      display:flex; align-items:center; justify-content:center;
+      font-size: 12px; color: var(--muted);
+    }
+
+    .cell{
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 20px;
+    }
+
+    .cell.start{ background: var(--start); border-color:#9ed89e; }
+    .cell.goal{  background: var(--goal);  border-color:#9fbaff; }
+    .cell.path{  background: var(--path);  border-color:#f2c56c; }
+
+    .cell.wall{
+      background: var(--wall-bg);
+      border-color: var(--wall-br);
+    }
+
+    .cell.current{
+      outline: 3px solid var(--cur-outline);
+      outline-offset: 2px;
+    }
+
+    .stepbadge{
+      position:absolute;
+      top: 6px; left: 8px;
+      font-size: 11px;
+      color: #333;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      pointer-events:none;
+    }
+
+    .cornerbadge{
+      position:absolute;
+      bottom: 6px; right: 8px;
+      font-size: 11px;
+      color: #333;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      pointer-events:none;
+    }
+
+    .valbadge{
+      position:absolute;
+      top: 6px; right: 8px;
+      font-size: 11px;
+      color: #333;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      pointer-events:none;
+    }
+
+    .legend{
+      margin-top: 10px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: #333;
+      font-size: 12px;
+    }
+    .legend span{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    .side{
+      position: sticky;
+      top: 12px;
+    }
+
+    .stat{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 10px;
+      font-size: 14px;
+      padding: 10px 0;
+      border-bottom: 1px dashed #ddd;
+    }
+    .stat:last-child{ border-bottom: none; }
+    .stat b{ font-weight: 700; }
+
+    textarea{
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background:#fff;
+      box-sizing: border-box;
+    }
+
+    .controls{
+      margin-top: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    button, select{
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button.primary{
+      border-color:#b7c7ff;
+      background:#eef2ff;
+    }
+
+    .msg{
+      margin-top: 10px;
+      font-size: 13px;
+      color: #b00020;
+      min-height: 18px;
+    }
+    .okmsg{ color: #0b6b0b; }
+
+    .pathlog{
+      margin-top: 10px;
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 13px;
+      line-height: 1.35;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background:#fff;
+      box-sizing: border-box;
+    }
+
+    .taskBox{
+      margin-top: 12px;
+      border-top: 1px dashed #ddd;
+      padding-top: 12px;
+    }
+    .taskBox h2{
+      font-size: 14px;
+      margin: 0 0 8px;
+    }
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: 6px;
+      white-space: pre-wrap;
+    }
+
+    dialog{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      max-width: 380px;
+    }
+    dialog::backdrop{
+      background: rgba(0,0,0,0.25);
+    }
+    .dlgRow{
+      display:flex;
+      justify-content:flex-end;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="board">
+      <h1>優化演算法體驗：固定地圖＋任務切換（UDLR 文字演算法）</h1>
+      <div class="hint">
+        固定地圖（不再隨機）。一般步數上限固定為 <b>16</b>；任務三步數限制為 <b>10</b>。炸彈踩到一次 <b>-2 分</b>（同格只計一次）。<br>
+        在右側選任務 → 在輸入框寫你的演算法（UDLR） → 按「執行」比較誰更優。
+      </div>
+
+      <div id="grid" class="grid"></div>
+
+      <div class="legend">
+        <span>起點：S</span>
+        <span>終點：G</span>
+        <span>牆壁：🧱</span>
+        <span>金幣：🪙(1~3固定)</span>
+        <span>愛心：❤️</span>
+        <span>炸彈：💣(-2)</span>
+        <span style="margin-left:auto;color:var(--muted);">座標：左下(1,1) → 右上(6,6)</span>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="stat">
+        <div>目前位置</div><div><b id="pos">(1,1)</b></div>
+        <div>是否到達終點</div><div><b id="done">否</b></div>
+      </div>
+
+      <div class="stat">
+        <div>步數（成功移動次數）</div><div><b id="steps">0</b></div>
+        <div>金幣總值（Σ🪙）</div><div><b id="coinSum">0</b></div>
+        <div>愛心（❤️）</div><div><b id="hearts">0</b></div>
+        <div>炸彈（💣）</div><div><b id="bombs">0</b></div>
+        <div>炸彈扣分（-2×💣）</div><div><b id="bombPenalty">0</b></div>
+        <div><b>任務成績</b></div><div><b id="taskScore">0</b></div>
+      </div>
+
+      <div class="taskBox">
+        <h2>選擇任務</h2>
+        <select id="taskSelect">
+          <option value="T1">任務一：最多金幣（Σ🪙 最大）</option>
+          <option value="T2">任務二：至少 1 ❤️ 下，最多金幣</option>
+          <option value="T3">任務三：10 步內到終點，最多金幣</option>
+          <option value="T4">任務四：吃到 3 ❤️ 下，最多金幣</option>
+        </select>
+        <div class="small" id="taskDesc"></div>
+      </div>
+
+      <div class="hint" style="margin-top:10px;margin-bottom:6px;">
+        輸入指令（允許空白/換行；大小寫皆可；只接受 UDLR）
+      </div>
+      <textarea id="algo" placeholder="例如：RRUURRDDLL&#10;或：U D L R 的組合"></textarea>
+
+      <div class="controls">
+        <button class="primary" id="btnRun">▶ 執行（從起點重新跑）</button>
+        <button id="btnReset">⟲ 重設（回到起點）</button>
+      </div>
+
+      <div class="msg" id="msg"></div>
+
+      <div class="hint" style="margin-top:10px;margin-bottom:6px;">執行紀錄（路徑座標）</div>
+      <textarea id="pathLog" class="pathlog" readonly></textarea>
+    </aside>
+  </div>
+
+  <dialog id="errDialog">
+    <div style="font-weight:700;font-size:16px;">路徑錯誤</div>
+    <div style="margin-top:6px;color:#444;font-size:13px;" id="errDetail">路徑錯誤</div>
+    <div class="dlgRow">
+      <button id="btnDlgOk" class="primary">確定</button>
+    </div>
+  </dialog>
+
+<script>
+/** =========================================================
+ *  固定規格
+ * ========================================================= */
+const SIZE = 6;
+const START = { x: 1, y: 1 };
+const GOAL  = { x: 6, y: 6 };
+
+const STEP_LIMIT_DEFAULT = 16; // 任務一/二/四
+const STEP_LIMIT_T3 = 10;      // 任務三：10 步內
+const BOMB_PENALTY = -2;
+
+/** =========================================================
+ *  固定地圖
+ * ========================================================= */
+const WALLS = new Set(["3,5","3,4","4,4"]);
+const HEARTS = new Set(["1,4","4,2","2,6"]);
+const BOMBS  = new Set(["2,3","4,3","6,4"]);
+const COIN_VALUES = new Map([
+  ["5,1",3], ["6,2",3], ["5,6",3], ["6,5",3],
+  ["4,1",2], ["5,2",2], ["5,4",2], ["4,5",2],
+  ["2,2",1], ["3,6",1]
+]);
+
+/** =========================================================
+ *  UI
+ * ========================================================= */
+const gridEl = document.getElementById("grid");
+const algoEl = document.getElementById("algo");
+const msgEl  = document.getElementById("msg");
+const pathLogEl = document.getElementById("pathLog");
+
+const posEl    = document.getElementById("pos");
+const doneEl   = document.getElementById("done");
+const stepsEl  = document.getElementById("steps");
+const coinSumEl = document.getElementById("coinSum");
+const heartsEl = document.getElementById("hearts");
+const bombsEl  = document.getElementById("bombs");
+const bombPenaltyEl = document.getElementById("bombPenalty");
+const taskScoreEl = document.getElementById("taskScore");
+
+const taskSelectEl = document.getElementById("taskSelect");
+const taskDescEl   = document.getElementById("taskDesc");
+
+const errDialog = document.getElementById("errDialog");
+const errDetail = document.getElementById("errDetail");
+document.getElementById("btnDlgOk").addEventListener("click", ()=> errDialog.close());
+
+/** =========================================================
+ *  狀態
+ * ========================================================= */
+let path = [];
+let visits = new Map();
+let collectedCoinKeys = new Set();
+let collectedHearts = new Set();
+let collectedBombs  = new Set();
+
+/** =========================================================
+ *  工具
+ * ========================================================= */
+function key(x,y){ return `${x},${y}`; }
+function parseKey(k){ const [x,y]=k.split(",").map(Number); return {x,y}; }
+
+function setMessage(text="", ok=false){
+  msgEl.textContent = text;
+  msgEl.classList.toggle("okmsg", !!ok);
+}
+function showPathError(detail){
+  errDetail.textContent = detail || "路徑錯誤";
+  if(typeof errDialog.showModal === "function") errDialog.showModal();
+  else alert("路徑錯誤");
+}
+function parseCommands(raw){
+  const cleaned = (raw || "").toUpperCase().replace(/\s+/g, "");
+  if(cleaned.length === 0) return { ok:false, reason:"請先輸入指令（U/D/L/R）" };
+  for(const ch of cleaned){
+    if(!"UDLR".includes(ch)){
+      return { ok:false, reason:`包含不合法字元：${ch}（只接受 U D L R）` };
+    }
+  }
+  return { ok:true, cmds: cleaned.split("") };
+}
+function currentStepLimit(){
+  return (taskSelectEl.value === "T3") ? STEP_LIMIT_T3 : STEP_LIMIT_DEFAULT;
+}
+
+/** =========================================================
+ *  任務定義
+ * ========================================================= */
+const TASKS = {
+  T1: {
+    name: "任務一：最多金幣",
+    desc:
+`步數上限：16
+目標：讓「金幣總值 Σ🪙」最大。
+成績：Σ🪙 + (-2×💣)（讓學生感受躲炸彈的取捨）。`,
+    scoreFn: (s) => s.coinSum + s.bombPenalty,
+    validFn: (s) => true,
+    scoreLabel: "成績 = Σ🪙 + (-2×💣)"
+  },
+  T2: {
+    name: "任務二：至少 1 ❤️ 下，最多金幣",
+    desc:
+`步數上限：16
+條件：❤️≥1
+目標：在符合條件下，Σ🪙 最大（同時仍會被炸彈扣分）。`,
+    scoreFn: (s) => s.coinSum + s.bombPenalty,
+    validFn: (s) => s.hearts >= 1,
+    scoreLabel: "成績 = Σ🪙 + (-2×💣)，且 ❤️≥1 才有效"
+  },
+  T3: {
+    name: "任務三：10 步內到終點，最多金幣",
+    desc:
+`步數上限：10（必須在 10 步內到達終點 G）
+目標：在「到達終點 + 步數≤10」的限制下，讓 Σ🪙 最大（仍會扣炸彈）。`,
+    scoreFn: (s) => s.coinSum + s.bombPenalty,
+    validFn: (s) => s.done && s.moves <= STEP_LIMIT_T3,
+    scoreLabel: "成績 = Σ🪙 + (-2×💣)，且 必須到 G 且 步數≤10"
+  },
+  T4: {
+    name: "任務四：吃到 3 ❤️ 下，最多金幣",
+    desc:
+`步數上限：16
+條件：❤️=3（全部）
+目標：在符合條件下，Σ🪙 最大（同時仍會被炸彈扣分）。`,
+    scoreFn: (s) => s.coinSum + s.bombPenalty,
+    validFn: (s) => s.hearts >= 3,
+    scoreLabel: "成績 = Σ🪙 + (-2×💣)，且 ❤️=3 才有效"
+  }
+};
+
+function updateTaskUI(){
+  const t = TASKS[taskSelectEl.value];
+  taskDescEl.textContent = `${t.name}\n${t.desc}\n\n${t.scoreLabel}`;
+}
+
+/** =========================================================
+ *  建立格子（含座標軸）
+ * ========================================================= */
+function buildGrid(){
+  gridEl.innerHTML = "";
+
+  const corner = document.createElement("div");
+  corner.className = "axis";
+  gridEl.appendChild(corner);
+
+  for(let x=1;x<=SIZE;x++){
+    const ax = document.createElement("div");
+    ax.className = "axis";
+    ax.textContent = x;
+    gridEl.appendChild(ax);
+  }
+
+  for(let y=SIZE;y>=1;y--){
+    const ay = document.createElement("div");
+    ay.className = "axis";
+    ay.textContent = y;
+    gridEl.appendChild(ay);
+
+    for(let x=1;x<=SIZE;x++){
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.dataset.k = key(x,y);
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+/** =========================================================
+ *  重設
+ * ========================================================= */
+function resetRunState(){
+  path = [ key(START.x,START.y) ];
+  visits = new Map([[path[0],[0]]]);
+
+  collectedCoinKeys = new Set();
+  collectedHearts = new Set();
+  collectedBombs  = new Set();
+
+  updateStatsAndRender();
+  setMessage("");
+}
+
+/** =========================================================
+ *  執行 UDLR
+ * ========================================================= */
+function runCommands(cmds){
+  setMessage("");
+  const limit = currentStepLimit();
+
+  for(let i=0;i<cmds.length;i++){
+    const movesSoFar = path.length - 1;
+    if(movesSoFar >= limit){
+      updateStatsAndRender();
+      setMessage(`已達步數上限（${limit} 步），停止執行。`, true);
+      return;
+    }
+
+    const ch = cmds[i];
+    const cur = parseKey(path[path.length-1]);
+    let nx = cur.x, ny = cur.y;
+
+    if(ch === "U") ny++;
+    if(ch === "D") ny--;
+    if(ch === "L") nx--;
+    if(ch === "R") nx++;
+
+    if(nx < 1 || nx > SIZE || ny < 1 || ny > SIZE){
+      updateStatsAndRender();
+      showPathError("路徑錯誤（碰到邊界）");
+      setMessage(`停止：第 ${i+1} 個指令 ${ch} 會碰到邊界。`, false);
+      return;
+    }
+
+    const nk = key(nx, ny);
+
+    if(WALLS.has(nk)){
+      updateStatsAndRender();
+      showPathError("路徑錯誤（碰到牆壁）");
+      setMessage(`停止：第 ${i+1} 個指令 ${ch} 會撞到牆壁 🧱。`, false);
+      return;
+    }
+
+    // move
+    path.push(nk);
+    const stepIndex = path.length - 1;
+    if(!visits.has(nk)) visits.set(nk, []);
+    visits.get(nk).push(stepIndex);
+
+    // collect once
+    if(COIN_VALUES.has(nk)) collectedCoinKeys.add(nk);
+    if(HEARTS.has(nk)) collectedHearts.add(nk);
+    if(BOMBS.has(nk))  collectedBombs.add(nk);
+
+    // 到終點：停止（仍算成功）
+    if(nk === key(GOAL.x,GOAL.y)){
+      updateStatsAndRender();
+      setMessage(`到達終點 ✅（第 ${i+1} 個指令到達，剩餘指令未執行）`, true);
+      return;
+    }
+  }
+
+  updateStatsAndRender();
+  setMessage("指令已全部執行完成。", true);
+}
+
+/** =========================================================
+ *  任務成績
+ * ========================================================= */
+function computeTaskScore(stats){
+  const task = TASKS[taskSelectEl.value];
+  const valid = task.validFn(stats);
+  if(!valid) return { valid:false, value: null };
+  return { valid:true, value: task.scoreFn(stats) };
+}
+
+/** =========================================================
+ *  更新統計 + 渲染
+ * ========================================================= */
+function updateStatsAndRender(){
+  const moves = Math.max(0, path.length - 1);
+  const cur = parseKey(path[path.length-1]);
+  const done = (cur.x===GOAL.x && cur.y===GOAL.y);
+
+  let coinSum = 0;
+  for(const ck of collectedCoinKeys){
+    coinSum += COIN_VALUES.get(ck) || 0;
+  }
+
+  const bombs = collectedBombs.size;
+  const bombPenalty = bombs * BOMB_PENALTY;
+
+  const stats = {
+    moves,
+    coinSum,
+    hearts: collectedHearts.size,
+    bombs,
+    bombPenalty,
+    done
+  };
+
+  posEl.textContent = `(${cur.x},${cur.y})`;
+  doneEl.textContent = done ? "是" : "否";
+  stepsEl.textContent = moves;
+
+  coinSumEl.textContent = stats.coinSum;
+  heartsEl.textContent = stats.hearts;
+  bombsEl.textContent  = stats.bombs;
+  bombPenaltyEl.textContent = stats.bombPenalty;
+
+  const res = computeTaskScore(stats);
+  if(res.valid){
+    taskScoreEl.textContent = String(res.value);
+    taskScoreEl.style.color = "#0b6b0b";
+  }else{
+    taskScoreEl.textContent = "無效";
+    taskScoreEl.style.color = "#b00020";
+  }
+
+  pathLogEl.value = path.map((k,i)=> `${i}:(${k})`).join("\n");
+
+  renderGrid();
+}
+
+/** =========================================================
+ *  渲染地圖
+ * ========================================================= */
+function renderGrid(){
+  const allCells = gridEl.querySelectorAll(".cell");
+  allCells.forEach(cell=>{
+    const k = cell.dataset.k;
+    cell.className = "cell";
+    cell.innerHTML = "";
+
+    if(WALLS.has(k)){
+      cell.classList.add("wall");
+      cell.textContent = "🧱";
+      return;
+    }
+
+    if(k === key(START.x,START.y)) cell.classList.add("start");
+    if(k === key(GOAL.x,GOAL.y))   cell.classList.add("goal");
+
+    if(visits.has(k)){
+      cell.classList.add("path");
+      const arr = visits.get(k);
+      const lastIdx = arr[arr.length-1];
+      const sb = document.createElement("div");
+      sb.className = "stepbadge";
+      sb.textContent = `${lastIdx}${arr.length>1 ? `×${arr.length}` : ""}`;
+      cell.appendChild(sb);
+    }
+
+    const isSpecial = (k===key(START.x,START.y) || k===key(GOAL.x,GOAL.y));
+    if(!isSpecial){
+      if(COIN_VALUES.has(k)){
+        cell.appendChild(Object.assign(document.createElement("div"), { textContent:"🪙" }));
+        const vb = document.createElement("div");
+        vb.className = "valbadge";
+        vb.textContent = String(COIN_VALUES.get(k));
+        cell.appendChild(vb);
+      } else if(HEARTS.has(k)){
+        cell.appendChild(Object.assign(document.createElement("div"), { textContent:"❤️" }));
+      } else if(BOMBS.has(k)){
+        cell.appendChild(Object.assign(document.createElement("div"), { textContent:"💣" }));
+      }
+    }
+
+    if(k === key(START.x,START.y)){
+      const cb = document.createElement("div");
+      cb.className = "cornerbadge";
+      cb.textContent = "S";
+      cell.appendChild(cb);
+    }
+    if(k === key(GOAL.x,GOAL.y)){
+      const cb = document.createElement("div");
+      cb.className = "cornerbadge";
+      cb.textContent = "G";
+      cell.appendChild(cb);
+    }
+
+    if(k === path[path.length-1]){
+      cell.classList.add("current");
+    }
+  });
+}
+
+/** =========================================================
+ *  事件
+ * ========================================================= */
+document.getElementById("btnRun").addEventListener("click", ()=>{
+  const parsed = parseCommands(algoEl.value);
+  if(!parsed.ok){
+    setMessage(parsed.reason, false);
+    return;
+  }
+  resetRunState();
+  runCommands(parsed.cmds);
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  resetRunState();
+  setMessage("已重設：回到起點。", true);
+});
+
+taskSelectEl.addEventListener("change", ()=>{
+  updateTaskUI();
+  updateStatsAndRender();
+});
+
+/** =========================================================
+ *  初始化
+ * ========================================================= */
+function init(){
+  buildGrid();
+  updateTaskUI();
+  resetRunState();
+}
+init();
+</script>
+</body>
+</html>
