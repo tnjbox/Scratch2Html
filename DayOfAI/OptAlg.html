@@ -112,10 +112,10 @@ margin-top:15px;
 
 <div class="controls">
 
-<button onclick="move('U')">上</button>
-<button onclick="move('D')">下</button>
-<button onclick="move('L')">左</button>
-<button onclick="move('R')">右</button>
+<button onclick="move('上')">上</button>
+<button onclick="move('下')">下</button>
+<button onclick="move('左')">左</button>
+<button onclick="move('右')">右</button>
 
 <button onclick="undo()">復原</button>
 <button onclick="resetGame()">重置</button>
@@ -135,7 +135,7 @@ margin-top:15px;
 <option value="T4">任務4：16步，全部3愛心，最多數量金幣</option>
 </select>
 
-<p>我的演算法路徑(上下左右 U D L R)</p>
+<p>我的演算法路徑</p>
 
 <textarea id="algo"></textarea>
 
@@ -284,10 +284,10 @@ let cur=parse(path[path.length-1])
 let nx=cur.x
 let ny=cur.y
 
-if(dir==="U") ny++
-if(dir==="D") ny--
-if(dir==="L") nx--
-if(dir==="R") nx++
+if(dir==="上") ny++
+if(dir==="下") ny--
+if(dir==="左") nx--
+if(dir==="右") nx++
 
 if(nx<1||nx>SIZE||ny<1||ny>SIZE){
 alert("路徑錯誤：碰到邊界")
