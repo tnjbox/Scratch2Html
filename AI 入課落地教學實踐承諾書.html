@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 入課落地教學實踐承諾書 - 虛擬簽署儀式</title>
+    <style>
+        /* 核心配色與基礎設定 */
+        :root {
+            --bg-color: #f8fafc;
+            --main-blue: #0f172a;
+            --tech-blue: #0284c7;
+            --amber-gold: #d97706;
+            --card-bg: #ffffff;
+            --text-gray: #475569;
+            --success-green: #16a34a;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--main-blue);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 95vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+            padding: 40px;
+            transition: all 0.4s ease;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            text-align: center;
+            margin-top: 0;
+            color: var(--main-blue);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--tech-blue);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        /* 雙欄輸入配置 */
+        .input-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--tech-blue);
+        }
+
+        /* 特質複選框區塊 */
+        .traits-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .trait-option {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 20px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            line-height: 1.5;
+        }
+
+        .trait-option input[type="checkbox"] {
+            display: none;
+        }
+
+        .trait-option.selected {
+            background-color: #fef3c7;
+            border-color: var(--amber-gold);
+            color: var(--main-blue);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: var(--tech-blue);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #0369a1;
+        }
+
+        /* 成果呈現外層包覆區 */
+        #result-view {
+            display: none;
+        }
+
+        /* 電子證書本體（獨立藍色方框） */
+        .cert-border-box {
+            border: 8px double var(--tech-blue);
+            padding: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            box-sizing: border-box;
+        }
+
+        .cert-header {
+            font-size: 2.5rem;
+            color: var(--main-blue);
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+
+        .cert-body {
+            font-size: 1.35rem;
+            line-height: 1.9;
+            text-align: justify;
+            margin: 40px 0;
+            color: var(--text-gray);
+        }
+
+        .highlight-text {
+            color: var(--main-blue);
+            font-weight: bold;
+            border-bottom: 2px solid var(--main-blue);
+            padding: 0 5px;
+        }
+
+        .highlight-traits {
+            color: var(--amber-gold);
+            font-weight: bold;
+        }
+
+        /* 證書底部章與簽名區 */
+        .cert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 5px;
+        }
+
+        .cert-badge {
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle, #f59e0b 0%, #b45309 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+            border: 4px dashed white;
+            line-height: 1.4;
+        }
+
+        .cert-signatures {
+            font-size: 1.1rem;
+            line-height: 2;
+            font-weight: bold;
+        }
+
+        /* 提示截圖下載區塊 */
+        .screenshot-tip {
+            margin-top: 30px;
+            padding: 18px;
+            background-color: #f0fdf4;
+            border: 2px dashed var(--success-green);
+            border-radius: 8px;
+            color: var(--success-green);
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="form-view">
+        <h1>🛡️ AI 入課落地教學實踐承諾書</h1>
+        <div class="subtitle">── 加入AI入課行列・虛擬簽署儀式 ──</div>
+        
+        <div class="input-row">
+            <div class="input-group">
+                <label for="school-name">1. 服務學校：</label>
+                <input type="text" id="school-name" placeholder="例如：嘉義市志航國小" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="teaching-stage">2. 任教學段/領域：</label>
+                <input type="text" id="teaching-stage" placeholder="例如：國中資訊科技" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="teacher-name">3. 教師姓名：</label>
+            <input type="text" id="teacher-name" placeholder="請輸入您的姓名或暱稱" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label>4. 請勾選您承諾在課堂中實踐的 AI 教學核心行動（多選，至少選兩項）：</label>
+            <div class="traits-grid">
+                <div class="trait-option" onclick="toggleTrait(this)">
+                    <input type="checkbox" name="traits" value="翻轉備課">🚀 翻轉備課｜積極參與AIPACK研習活動，發展AI入課教材教法，打造適性個別化的學習環境。
+                </div>
+                <div class="trait-option" onclick="toggleTrait(this)">
+                    <input type="checkbox" name="traits" value="落地實踐">🧠 落地實踐｜運用自己或他人發展之AI入課教材，導入課程，實踐AI入課教學。
+                </div>
+                <div class="trait-option" onclick="toggleTrait(this)">
+                    <input type="checkbox" name="traits" value="倫理引導">🛡️ 倫理引導｜主動教導學生提示詞技巧，並引導孩子辨識 AI 幻覺、落實事實查核。
+                </div>
+                <div class="trait-option" onclick="toggleTrait(this)">
+                    <input type="checkbox" name="traits" value="歷程評量">📝 歷程評量｜將評量重點從「最終產出」轉向「對話與思考歷程」，培養批判性思維。
+                </div>
+                <div class="trait-option" onclick="toggleTrait(this)">
+                    <input type="checkbox" name="traits" value="社群共備">🤝 社群共備｜積極參與 AI 落地共備社群，大方分享課堂示例，與全台夥伴攜手並進。
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="generateCertificate()">正式簽署並生成證書</button>
+    </div>
+
+    <div id="result-view">
+        
+        <div class="cert-border-box" id="cert-view">
+            <div class="cert-header">大 使 承 諾 書</div>
+            <div class="subtitle">AI 入課與落地教學先行者認證證書</div>
+            
+            <div class="cert-body">
+                我 <span id="display-school" class="highlight-text">【服務學校】</span> 的 <span id="display-name" class="highlight-text">【教師姓名】</span> 老師鄭重承諾，將積極引導學生正確、安全且有效地使用 AI，並在課堂中落實 <span id="display-traits" class="highlight-traits">【核心承諾】</span> 的智慧教育理念。我將致力於推動 AI 入課、深化落地教學，引領孩子從知識的消費者蛻變為未來的創造者，攜手開創智慧教育的新篇章。
+            </div>
+
+            <div class="cert-footer">
+                <div class="cert-signatures">
+                    發起單位：科技攜手 ✕ AI落地共備社群<br>
+                    服務學校：<span id="display-cert-school">＿＿＿＿</span><br>
+                    任教學段：<span id="display-cert-stage">＿＿＿＿</span><br>
+                    宣誓日期：<span id="display-date">2026 年 -- 月 -- 日</span>
+                </div>
+                <div class="cert-badge">
+                    AI 教育<br>落地先行者<br>★ 榮譽章 ★
+                </div>
+            </div>
+        </div>
+
+        <div class="screenshot-tip">
+            🎉 恭喜您正式成為 AI 落地教學先行者！<br>
+            為了保持證書的完整與美觀，截圖時<b>請只擷取上方的「藍色方框內」畫面</b>即可。<br>
+            擷取完成後即可關閉網頁，並將精美的證書貼文上傳至 Padlet 牆上，與全台夥伴一同點亮 AI 教學新地圖！
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 處理特質選項卡片點擊的視覺回饋與勾選邏輯
+    function toggleTrait(element) {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+            element.classList.add('selected');
+        } else {
+            element.classList.remove('selected');
+        }
+    }
+
+    // 表單驗證與生成證書
+    function generateCertificate() {
+        const schoolInput = document.getElementById('school-name').value.trim();
+        const stageInput = document.getElementById('teaching-stage').value.trim();
+        const nameInput = document.getElementById('teacher-name').value.trim();
+        const checkedBoxes = document.querySelectorAll('input[name="traits"]:checked');
+        
+        // 驗證基本資料是否確實填寫
+        if (!schoolInput || !stageInput || !nameInput) {
+            alert('請老師確實填寫服務學校、任教學段與姓名喔！');
+            return;
+        }
+
+        // 驗證特質數量
+        if (checkedBoxes.length < 2) {
+            alert('請至少勾選 2 項教學承諾，讓我們凝聚更強大的實踐能量！');
+            return;
+        }
+
+        // 收集勾選的特質並轉化為文字串聯
+        const selectedTraits = [];
+        checkedBoxes.forEach(box => {
+            selectedTraits.push(`「${box.value}」`);
+        });
+        
+        let traitsText = "";
+        if (selectedTraits.length === 2) {
+            traitsText = selectedTraits.join(' 與 ');
+        } else {
+            const lastTrait = selectedTraits.pop();
+            traitsText = selectedTraits.join('、') + ` 與 ${lastTrait}`;
+        }
+
+        // 動態注入資料到電子證書中
+        document.getElementById('display-school').innerText = schoolInput;
+        document.getElementById('display-name').innerText = nameInput;
+        document.getElementById('display-traits').innerText = traitsText;
+        
+        // 底部簽名區連動更新
+        document.getElementById('display-cert-school').innerText = schoolInput;
+        document.getElementById('display-cert-stage').innerText = stageInput;
+        
+        // 自動生成當前日期
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const date = today.getDate();
+        document.getElementById('display-date').innerText = `${year} 年 ${month} 月 ${date} 日`;
+
+        // 切換畫面檢視：隱藏表單，秀出包含證書與外部提示的結果區
+        document.getElementById('form-view').style.display = 'none';
+        document.getElementById('result-view').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
