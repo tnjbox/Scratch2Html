@@ -7,35 +7,81 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
-        .container { max-width: 800px; margin: 0 auto; background: #34495e; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .container { max-width: 900px; margin: 0 auto; background: #34495e; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         h1 { margin-top: 0; font-size: 32px; letter-spacing: 2px; }
-        .status-bar { font-size: 20px; margin-bottom: 20px; color: #f1c40f; }
+        .status-bar { font-size: 20px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
+        
+        /* 控制按鈕區 */
+        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn { padding: 12px 25px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .btn:active { transform: scale(0.95); }
+        .btn-toggle-a { background-color: #9b59b6; color: white; }
+        .btn-toggle-b { background-color: #3498db; color: white; }
+        .btn-reset { background-color: #e74c3c; color: white; }
+        
+        /* 隱藏/顯示控制 */
+        .hidden { display: none !important; }
+
+        /* 圖表區 */
         .chart-container { position: relative; height: 40vh; width: 100%; margin-bottom: 30px; }
-        .btn-reset { padding: 15px 40px; background-color: #e74c3c; color: white; font-size: 22px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .btn-reset:hover { background-color: #c0392b; }
-        .btn-reset:active { transform: scale(0.98); }
+
+        /* 座號明細網格區 */
+        .details-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 30px; }
+        .seat-card { background: #7f8c8d; color: white; padding: 15px 5px; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); }
+        
+        /* 依據選項變換明細顏色 */
+        .voted-a { background-color: #e74c3c; }
+        .voted-b { background-color: #f1c40f; color: #333; }
+        .voted-c { background-color: #3498db; }
+        .voted-d { background-color: #2ecc71; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>📊 課堂即時投票大盤</h1>
-    <div class="status-bar" id="totalStatus">目前已投票人數：0 人</div>
+    <div class="status-bar" id="totalStatus">🟢 目前已投票人數：0 人</div>
     
-    <div class="chart-container">
-        <canvas id="voteChart"></canvas>
+    <div class="controls">
+        <button class="btn btn-toggle-a" onclick="toggleA()">📋 按鈕 A：開關座號明細</button>
+        <button class="btn btn-toggle-b" onclick="toggleB()">📊 按鈕 B：開關統計圖表</button>
+        <button class="btn btn-reset" onclick="resetVoting()">🔄 重置本輪投票</button>
     </div>
 
-    <button class="btn-reset" onclick="resetVoting()">🔄 重置本輪投票</button>
+    <div id="sectionA" class="hidden">
+        <div class="details-grid" id="detailsGrid">
+            </div>
+    </div>
+    
+    <div id="sectionB" class="hidden">
+        <div class="chart-container">
+            <canvas id="voteChart"></canvas>
+        </div>
+    </div>
 </div>
 
 <script>
     // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK-FdTKV-cS3ZaCAm07410B1ytjNrWkEzM7u6sA53yVR8Qr1dt5D0nlBPuoRiLQd8y/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK21gdViRSPrvV9wM0AA4gwqw55PPoy3sZh-KBRQErxh6hRY1hPVTMzoiW5i9eG3_P/exec"; 
 
     let voteChart;
     const ctx = document.getElementById('voteChart').getContext('2d');
+    
+    // 顯示狀態控制
+    let isShowA = false;
+    let isShowB = false;
 
+    function toggleA() {
+        isShowA = !isShowA;
+        document.getElementById('sectionA').classList.toggle('hidden', !isShowA);
+    }
+
+    function toggleB() {
+        isShowB = !isShowB;
+        document.getElementById('sectionB').classList.toggle('hidden', !isShowB);
+    }
+
+    // 初始化 Chart.js 直條圖
     function initChart() {
         voteChart = new Chart(ctx, {
             type: 'bar',
@@ -54,43 +100,92 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, ticks: { color: '#fff', stepSize: 1, font: { size: 16 } }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                    x: { ticks: { color: '#fff', font: { size: 18, weight: 'bold' } }, grid: { display: false } }
+                    y: { beginAtZero: true, ticks: { color: '#fff', stepSize: 1, font: { size: 16 } } },
+                    x: { ticks: { color: '#fff', font: { size: 18, weight: 'bold' } } }
                 }
             }
         });
     }
 
+    // 動態更新 35 個座號格子的畫面 (防閃爍寫法)
+    function renderDetails(details) {
+        const grid = document.getElementById('detailsGrid');
+        
+        // 第一次載入時，先建立 35 個空的格子
+        if (grid.children.length === 0) {
+            details.forEach(d => {
+                const card = document.createElement('div');
+                card.id = 'seat-' + d.seat;
+                card.className = 'seat-card';
+                grid.appendChild(card);
+            });
+        }
+
+        // 更新格子的內容與顏色
+        details.forEach(d => {
+            const card = document.getElementById('seat-' + d.seat);
+            let seatStr = d.seat < 10 ? '0' + d.seat : d.seat;
+            
+            if (d.vote) {
+                card.className = 'seat-card voted-' + d.vote.toLowerCase();
+                card.innerText = `${seatStr}號: ${d.vote}`;
+            } else {
+                card.className = 'seat-card';
+                card.innerText = `${seatStr}號: --`; // 尚未投票
+            }
+        });
+    }
+
+    // 每 2 秒自動抓取最新投票數據
     function fetchVotes() {
-        // 抓取資料：指定 action=getStats，並加上時間戳防止快取
         fetch(`${GAS_URL}?action=getStats&t=${Date.now()}`)
         .then(response => response.json())
         .then(data => {
+            // 更新圖表數據
             voteChart.data.datasets[0].data = [data.A, data.B, data.C, data.D];
             voteChart.update();
-            document.getElementById('totalStatus').innerText = `目前已投票人數：${data.total} 人`;
+            
+            // 更新座號明細數據
+            if (data.details) {
+                renderDetails(data.details);
+            }
+            
+            // 更新文字狀態
+            document.getElementById('totalStatus').innerText = `🟢 目前已投票人數：${data.total} 人`;
         })
         .catch(err => console.error("讀取資料失敗:", err));
     }
 
+    // 一鍵重置按鈕邏輯
     function resetVoting() {
         if (confirm("確定要清空全班投票紀錄，開始新一輪投票嗎？")) {
-            document.getElementById('totalStatus').innerText = "正在清除試算表...";
+            document.getElementById('totalStatus').innerText = "🟡 正在清除試算表...";
             
-            // 重置資料：指定 action=reset，改用 GET 呼叫
             fetch(`${GAS_URL}?action=reset&t=${Date.now()}`)
             .then(response => response.json())
             .then(result => {
                 if(result.status === "success") {
+                    // 圖表歸零
                     voteChart.data.datasets[0].data = [0, 0, 0, 0];
                     voteChart.update();
-                    document.getElementById('totalStatus').innerText = "目前已投票人數：0 人 (已成功重置)";
+                    
+                    // 強制觸發一次抓取以清空明細畫面
+                    fetchVotes();
+                    
+                    // (選用) 重置時自動隱藏結果，保持下一題的神祕感
+                    isShowA = false;
+                    isShowB = false;
+                    document.getElementById('sectionA').classList.add('hidden');
+                    document.getElementById('sectionB').classList.add('hidden');
+                    
+                    document.getElementById('totalStatus').innerText = "🟢 目前已投票人數：0 人 (已成功重置)";
                 }
             })
             .catch(err => alert("重置失敗，請檢查網路:", err));
         }
     }
 
+    // 網頁載入後啟動
     initChart();
     fetchVotes();
     setInterval(fetchVotes, 2000); 
