@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A即時投票系統 - 教師控制端</title>
+    <title>即時投票系統 - 教師控制端</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
@@ -19,7 +19,7 @@
 <body>
 
 <div class="container">
-    <h1>📊 A課堂即時投票大盤</h1>
+    <h1>📊 課堂即時投票大盤</h1>
     <div class="status-bar" id="totalStatus">目前已投票人數：0 人</div>
     
     <div class="chart-container">
@@ -30,13 +30,12 @@
 </div>
 
 <script>
-    // 🔗 您的 GAS 網頁應用程式網址
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxv9iJsUSPr7i886GupMM69fozNAMENhK35odbEtrzhBaICAoMa3eeYO3NiTjdkX8bg/exec"; 
+    // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK-FdTKV-cS3ZaCAm07410B1ytjNrWkEzM7u6sA53yVR8Qr1dt5D0nlBPuoRiLQd8y/exec"; 
 
     let voteChart;
     const ctx = document.getElementById('voteChart').getContext('2d');
 
-    // 初始化 Chart.js 直條圖
     function initChart() {
         voteChart = new Chart(ctx, {
             type: 'bar',
@@ -62,45 +61,39 @@
         });
     }
 
-    // 每 2 秒自動抓取最新投票數據 (輪詢 Polling)
     function fetchVotes() {
-        // 💡【核心修正】加上 ?t= 時間戳記，徹底破壞瀏覽器快取機制，確保即時動態更新
-        fetch(GAS_URL + "?t=" + Date.now())
+        // 抓取資料：指定 action=getStats，並加上時間戳防止快取
+        fetch(`${GAS_URL}?action=getStats&t=${Date.now()}`)
         .then(response => response.json())
         .then(data => {
-            // 更新圖表數據
             voteChart.data.datasets[0].data = [data.A, data.B, data.C, data.D];
             voteChart.update();
-            // 更新文字狀態
             document.getElementById('totalStatus').innerText = `目前已投票人數：${data.total} 人`;
         })
         .catch(err => console.error("讀取資料失敗:", err));
     }
 
-    // 一鍵重置按鈕邏輯
     function resetVoting() {
         if (confirm("確定要清空全班投票紀錄，開始新一輪投票嗎？")) {
             document.getElementById('totalStatus').innerText = "正在清除試算表...";
             
-            // 💡 RESET 採用 POST 模式發送
-            fetch(GAS_URL + "?action=reset", { 
-                method: 'POST',
-                mode: 'no-cors' 
-            })
-            .then(() => {
-                // 手動先把前端圖表歸零，提升視覺流暢度
-                voteChart.data.datasets[0].data = [0, 0, 0, 0];
-                voteChart.update();
-                document.getElementById('totalStatus').innerText = "目前已投票人數：0 人 (已成功重置)";
+            // 重置資料：指定 action=reset，改用 GET 呼叫
+            fetch(`${GAS_URL}?action=reset&t=${Date.now()}`)
+            .then(response => response.json())
+            .then(result => {
+                if(result.status === "success") {
+                    voteChart.data.datasets[0].data = [0, 0, 0, 0];
+                    voteChart.update();
+                    document.getElementById('totalStatus').innerText = "目前已投票人數：0 人 (已成功重置)";
+                }
             })
             .catch(err => alert("重置失敗，請檢查網路:", err));
         }
     }
 
-    // 網頁載入後啟動
     initChart();
     fetchVotes();
-    setInterval(fetchVotes, 2000); // 每 2000 毫秒（2秒）自動刷新一次
+    setInterval(fetchVotes, 2000); 
 </script>
 
 </body>
