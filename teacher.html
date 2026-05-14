@@ -11,17 +11,20 @@
         h1 { margin-top: 0; font-size: 32px; letter-spacing: 2px; }
         .status-bar { font-size: 20px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
         
-        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn { padding: 12px 25px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn { padding: 12px 20px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .btn:active { transform: scale(0.95); }
         .btn-toggle-a { background-color: #9b59b6; color: white; }
         .btn-toggle-b { background-color: #3498db; color: white; }
         .btn-reset { background-color: #e74c3c; color: white; }
         
+        /* 💡 新增：設定人數區塊的樣式 */
+        .setting-group { background-color: #7f8c8d; padding: 10px 15px; border-radius: 8px; font-size: 18px; font-weight: bold; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .setting-group input { width: 50px; margin-left: 10px; padding: 5px; font-size: 18px; font-weight: bold; text-align: center; border: none; border-radius: 5px; }
+
         .hidden { display: none !important; }
         .chart-container { position: relative; height: 40vh; width: 100%; margin-bottom: 30px; }
 
-        /* 座號明細網格區 - 加入排版優化 */
         .details-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 30px; }
         
         .seat-card { 
@@ -46,8 +49,14 @@
     <div class="status-bar" id="totalStatus">🟢 目前已投票人數：0 人</div>
     
     <div class="controls">
-        <button class="btn btn-toggle-a" onclick="toggleA()">📋 按鈕 A：開關座號明細</button>
-        <button class="btn btn-toggle-b" onclick="toggleB()">📊 按鈕 B：開關統計圖表</button>
+        <!-- 💡 新增：班級人數設定輸入框 -->
+        <div class="setting-group">
+            班級人數 <input type="number" id="studentCount" value="35" min="1" max="50">
+        </div>
+
+        <!-- 💡 修正：精簡按鈕文字 -->
+        <button class="btn btn-toggle-a" onclick="toggleA()">📋 開 / 關座號明細</button>
+        <button class="btn btn-toggle-b" onclick="toggleB()">📊 開 / 關統計圖表</button>
         <button class="btn btn-reset" onclick="resetVoting()">🔄 重置本輪投票</button>
     </div>
 
@@ -64,12 +73,15 @@
 
 <script>
     // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyyRMu-w0seM-LudwrRr3OF5E4q94N_Vonr1YjMcbR9tPSRWRDqN9pFU45u7fJFnHHf/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxLq3ZMg_L6SsctSuqTEjm1jolTMWDxMMdTOhQJ80PGI-y_h3tcXjFWXkZwuDBfnByY/exec"; 
 
     let voteChart;
     const ctx = document.getElementById('voteChart').getContext('2d');
     let isShowA = false;
     let isShowB = false;
+
+    // 💡 新增：記錄當前顯示的學生人數 (預設 35)
+    let currentDisplayCount = 35; 
 
     function toggleA() {
         isShowA = !isShowA;
@@ -106,12 +118,16 @@
         });
     }
 
-    // 💡 渲染畫面：同時顯示「座號姓名」與「選項」
     function renderDetails(details) {
         const grid = document.getElementById('detailsGrid');
         
-        if (grid.children.length === 0) {
-            details.forEach(d => {
+        // 💡 核心修正：根據 currentDisplayCount 裁切要顯示的資料長度
+        const displayDetails = details.slice(0, currentDisplayCount);
+        
+        // 檢查網格數量是否與設定人數相符，如果不符 (例如老師修改了人數)，就清空重建
+        if (grid.children.length !== currentDisplayCount) {
+            grid.innerHTML = ''; 
+            displayDetails.forEach(d => {
                 const card = document.createElement('div');
                 card.id = 'seat-' + d.seat;
                 card.className = 'seat-card';
@@ -119,19 +135,20 @@
             });
         }
 
-        details.forEach(d => {
+        // 更新格子的內容與顏色
+        displayDetails.forEach(d => {
             const card = document.getElementById('seat-' + d.seat);
-            let seatStr = d.seat < 10 ? '0' + d.seat : d.seat;
-            
-            // 將原本的一行文字，拆成上下兩層 (div) 顯示
-            if (d.vote) {
-                card.className = 'seat-card voted-' + d.vote.toLowerCase();
-                card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div>
-                                  <div class="seat-vote">${d.vote}</div>`;
-            } else {
-                card.className = 'seat-card';
-                card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div>
-                                  <div class="seat-vote">--</div>`;
+            if(card) {
+                let seatStr = d.seat < 10 ? '0' + d.seat : d.seat;
+                if (d.vote) {
+                    card.className = 'seat-card voted-' + d.vote.toLowerCase();
+                    card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div>
+                                      <div class="seat-vote">${d.vote}</div>`;
+                } else {
+                    card.className = 'seat-card';
+                    card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div>
+                                      <div class="seat-vote">--</div>`;
+                }
             }
         });
     }
@@ -154,6 +171,12 @@
 
     function resetVoting() {
         if (confirm("確定要清空全班投票紀錄，開始新一輪投票嗎？")) {
+            // 💡 核心修正：按下重置時，讀取輸入框的數值並更新顯示人數
+            let inputCount = parseInt(document.getElementById('studentCount').value, 10);
+            if (!isNaN(inputCount) && inputCount > 0) {
+                currentDisplayCount = inputCount;
+            }
+
             document.getElementById('totalStatus').innerText = "🟡 正在清除試算表...";
             
             fetch(`${GAS_URL}?action=reset&t=${Date.now()}`)
