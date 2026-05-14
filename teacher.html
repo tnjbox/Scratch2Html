@@ -30,7 +30,7 @@
 </div>
 
 <script>
-    // 🔗 填入您部署好的 GAS 網頁應用程式網址
+    // 🔗 您的 GAS 網頁應用程式網址
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxv9iJsUSPr7i886GupMM69fozNAMENhK35odbEtrzhBaICAoMa3eeYO3NiTjdkX8bg/exec"; 
 
     let voteChart;
@@ -64,7 +64,8 @@
 
     // 每 2 秒自動抓取最新投票數據 (輪詢 Polling)
     function fetchVotes() {
-        fetch(GAS_URL)
+        // 💡【核心修正】加上 ?t= 時間戳記，徹底破壞瀏覽器快取機制，確保即時動態更新
+        fetch(GAS_URL + "?t=" + Date.now())
         .then(response => response.json())
         .then(data => {
             // 更新圖表數據
@@ -78,9 +79,10 @@
 
     // 一鍵重置按鈕邏輯
     function resetVoting() {
-        if (confirm(" 確定要清空全班投票紀錄，開始新一輪投票嗎？")) {
+        if (confirm("確定要清空全班投票紀錄，開始新一輪投票嗎？")) {
             document.getElementById('totalStatus').innerText = "正在清除試算表...";
             
+            // 💡 RESET 採用 POST 模式發送
             fetch(GAS_URL + "?action=reset", { 
                 method: 'POST',
                 mode: 'no-cors' 
