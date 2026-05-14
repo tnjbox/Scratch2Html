@@ -31,7 +31,7 @@
 <div class="card">
     <h2>📱 課堂互動投票區</h2>
     
-    <form id="voteForm" onsubmit="return validateAndSubmit();">
+    <form id="voteForm" onsubmit="validateAndSubmit(event)">
         <div class="input-group">
             <label>您的座號</label>
             <select id="seat" required>
@@ -56,8 +56,8 @@
 </div>
 
 <script>
-    // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
-    const GAS_URL = "請換成您的_GAS_網址"; 
+    // 🔗 您部署的 GAS 網頁應用程式 URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK-FdTKV-cS3ZaCAm07410B1ytjNrWkEzM7u6sA53yVR8Qr1dt5D0nlBPuoRiLQd8y/exec"; 
 
     const seatSelect = document.getElementById('seat');
     for (let i = 1; i <= 35; i++) {
@@ -77,14 +77,17 @@
         document.getElementById('msg').className = "";
     }
 
-    function validateAndSubmit() {
+    // 💡 修正二：接收 event，並阻止表單預設刷新行為
+    function validateAndSubmit(event) {
+        event.preventDefault(); 
+
         const seatValue = seatSelect.value;
         const nameValue = document.getElementById('name').value.trim();
         const ansValue = document.getElementById('ansInput').value;
 
         if (!ansValue) {
             alert('請先選擇答案！');
-            return false;
+            return;
         }
 
         localStorage.setItem('student_seat', seatValue);
@@ -94,10 +97,8 @@
         document.getElementById('msg').innerHTML = "🚀 答案傳送中...";
         document.getElementById('msg').className = "sending";
 
-        // 核心修改：將所有參數結合成網址查詢字串 (Query String)
         const requestUrl = `${GAS_URL}?action=vote&seat=${seatValue}&name=${encodeURIComponent(nameValue)}&vote=${ansValue}&t=${Date.now()}`;
 
-        // 呼叫 GAS (使用預設的 GET 請求)
         fetch(requestUrl)
         .then(response => response.json())
         .then(result => {
@@ -111,12 +112,11 @@
             }
         })
         .catch(err => {
+            console.error(err); // 增加錯誤捕捉，方便開發者工具看詳細原因
             alert("傳送失敗，請確認網路連線！");
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('msg').innerHTML = "❌ 傳送失敗，請重試。";
         });
-
-        return false; 
     }
 </script>
 
