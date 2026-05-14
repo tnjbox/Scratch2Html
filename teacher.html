@@ -11,7 +11,6 @@
         h1 { margin-top: 0; font-size: 32px; letter-spacing: 2px; }
         .status-bar { font-size: 20px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
         
-        /* 控制按鈕區 */
         .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn { padding: 12px 25px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .btn:active { transform: scale(0.95); }
@@ -19,17 +18,21 @@
         .btn-toggle-b { background-color: #3498db; color: white; }
         .btn-reset { background-color: #e74c3c; color: white; }
         
-        /* 隱藏/顯示控制 */
         .hidden { display: none !important; }
-
-        /* 圖表區 */
         .chart-container { position: relative; height: 40vh; width: 100%; margin-bottom: 30px; }
 
-        /* 座號明細網格區 */
-        .details-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 30px; }
-        .seat-card { background: #7f8c8d; color: white; padding: 15px 5px; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); }
+        /* 座號明細網格區 - 加入排版優化 */
+        .details-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 30px; }
         
-        /* 依據選項變換明細顏色 */
+        .seat-card { 
+            background: #7f8c8d; color: white; border-radius: 8px; 
+            padding: 8px 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        
+        .seat-name { font-size: 14px; opacity: 0.9; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .seat-vote { font-size: 24px; font-weight: bold; }
+        
         .voted-a { background-color: #e74c3c; }
         .voted-b { background-color: #f1c40f; color: #333; }
         .voted-c { background-color: #3498db; }
@@ -49,8 +52,7 @@
     </div>
 
     <div id="sectionA" class="hidden">
-        <div class="details-grid" id="detailsGrid">
-            </div>
+        <div class="details-grid" id="detailsGrid"></div>
     </div>
     
     <div id="sectionB" class="hidden">
@@ -62,12 +64,10 @@
 
 <script>
     // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK21gdViRSPrvV9wM0AA4gwqw55PPoy3sZh-KBRQErxh6hRY1hPVTMzoiW5i9eG3_P/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyyRMu-w0seM-LudwrRr3OF5E4q94N_Vonr1YjMcbR9tPSRWRDqN9pFU45u7fJFnHHf/exec"; 
 
     let voteChart;
     const ctx = document.getElementById('voteChart').getContext('2d');
-    
-    // 顯示狀態控制
     let isShowA = false;
     let isShowB = false;
 
@@ -81,7 +81,6 @@
         document.getElementById('sectionB').classList.toggle('hidden', !isShowB);
     }
 
-    // 初始化 Chart.js 直條圖
     function initChart() {
         voteChart = new Chart(ctx, {
             type: 'bar',
@@ -107,11 +106,10 @@
         });
     }
 
-    // 動態更新 35 個座號格子的畫面 (防閃爍寫法)
+    // 💡 渲染畫面：同時顯示「座號姓名」與「選項」
     function renderDetails(details) {
         const grid = document.getElementById('detailsGrid');
         
-        // 第一次載入時，先建立 35 個空的格子
         if (grid.children.length === 0) {
             details.forEach(d => {
                 const card = document.createElement('div');
@@ -121,42 +119,39 @@
             });
         }
 
-        // 更新格子的內容與顏色
         details.forEach(d => {
             const card = document.getElementById('seat-' + d.seat);
             let seatStr = d.seat < 10 ? '0' + d.seat : d.seat;
             
+            // 將原本的一行文字，拆成上下兩層 (div) 顯示
             if (d.vote) {
                 card.className = 'seat-card voted-' + d.vote.toLowerCase();
-                card.innerText = `${seatStr}號: ${d.vote}`;
+                card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div>
+                                  <div class="seat-vote">${d.vote}</div>`;
             } else {
                 card.className = 'seat-card';
-                card.innerText = `${seatStr}號: --`; // 尚未投票
+                card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div>
+                                  <div class="seat-vote">--</div>`;
             }
         });
     }
 
-    // 每 2 秒自動抓取最新投票數據
     function fetchVotes() {
         fetch(`${GAS_URL}?action=getStats&t=${Date.now()}`)
         .then(response => response.json())
         .then(data => {
-            // 更新圖表數據
             voteChart.data.datasets[0].data = [data.A, data.B, data.C, data.D];
             voteChart.update();
             
-            // 更新座號明細數據
             if (data.details) {
                 renderDetails(data.details);
             }
             
-            // 更新文字狀態
             document.getElementById('totalStatus').innerText = `🟢 目前已投票人數：${data.total} 人`;
         })
         .catch(err => console.error("讀取資料失敗:", err));
     }
 
-    // 一鍵重置按鈕邏輯
     function resetVoting() {
         if (confirm("確定要清空全班投票紀錄，開始新一輪投票嗎？")) {
             document.getElementById('totalStatus').innerText = "🟡 正在清除試算表...";
@@ -165,14 +160,10 @@
             .then(response => response.json())
             .then(result => {
                 if(result.status === "success") {
-                    // 圖表歸零
                     voteChart.data.datasets[0].data = [0, 0, 0, 0];
                     voteChart.update();
-                    
-                    // 強制觸發一次抓取以清空明細畫面
                     fetchVotes();
                     
-                    // (選用) 重置時自動隱藏結果，保持下一題的神祕感
                     isShowA = false;
                     isShowB = false;
                     document.getElementById('sectionA').classList.add('hidden');
@@ -185,7 +176,6 @@
         }
     }
 
-    // 網頁載入後啟動
     initChart();
     fetchVotes();
     setInterval(fetchVotes, 2000); 
