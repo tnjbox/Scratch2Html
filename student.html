@@ -10,7 +10,8 @@
         h2 { text-align: center; color: #333; margin-top: 0; font-size: 24px; }
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        /* 座號改為 number 輸入類型 */
+        input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
         .opt-btn { padding: 30px 10px; font-size: 32px; font-weight: bold; color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .opt-btn:active { transform: scale(0.95); }
@@ -33,10 +34,9 @@
     
     <form id="voteForm" onsubmit="validateAndSubmit(event)">
         <div class="input-group">
-            <label>您的座號</label>
-            <select id="seat" required>
-                <option value="">請選擇座號</option>
-            </select>
+            <label>您的座號 (1~35)</label>
+            <!-- 💡 修正：改用輸入框，並設定 HTML5 內建的 min 與 max -->
+            <input type="number" id="seat" min="1" max="35" placeholder="請輸入數字 1 到 35" required>
         </div>
         <div class="input-group">
             <label>您的姓名</label>
@@ -56,18 +56,16 @@
 </div>
 
 <script>
-    // 🔗 您部署的 GAS 網頁應用程式 URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK-FdTKV-cS3ZaCAm07410B1ytjNrWkEzM7u6sA53yVR8Qr1dt5D0nlBPuoRiLQd8y/exec"; 
+    // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxLq3ZMg_L6SsctSuqTEjm1jolTMWDxMMdTOhQJ80PGI-y_h3tcXjFWXkZwuDBfnByY/exec"; 
 
-    const seatSelect = document.getElementById('seat');
-    for (let i = 1; i <= 35; i++) {
-        let numStr = i < 10 ? '0' + i : '' + i;
-        let opt = new Option(numStr + ' 號', numStr);
-        seatSelect.add(opt);
+    // 💡 安全讀取 LocalStorage
+    try {
+        if (localStorage.getItem('student_seat')) document.getElementById('seat').value = localStorage.getItem('student_seat');
+        if (localStorage.getItem('student_name')) document.getElementById('name').value = localStorage.getItem('student_name');
+    } catch (e) {
+        console.warn("Iframe 模式下無法讀取記憶體");
     }
-
-    if (localStorage.getItem('student_seat')) seatSelect.value = localStorage.getItem('student_seat');
-    if (localStorage.getItem('student_name')) document.getElementById('name').value = localStorage.getItem('student_name');
 
     function selectOption(value, btnElement) {
         document.getElementById('ansInput').value = value;
@@ -77,21 +75,31 @@
         document.getElementById('msg').className = "";
     }
 
-    // 💡 修正二：接收 event，並阻止表單預設刷新行為
     function validateAndSubmit(event) {
         event.preventDefault(); 
 
-        const seatValue = seatSelect.value;
+        const seatInput = document.getElementById('seat').value;
         const nameValue = document.getElementById('name').value.trim();
         const ansValue = document.getElementById('ansInput').value;
+
+        // 💡 修正：雙重驗證座號是否在 1~35 之間 (防止學生亂填或用舊版瀏覽器繞過)
+        const seatValue = parseInt(seatInput, 10);
+        if (isNaN(seatValue) || seatValue < 1 || seatValue > 35) {
+            alert('⚠️ 座號錯誤！請輸入 1 到 35 之間的數字。');
+            return;
+        }
 
         if (!ansValue) {
             alert('請先選擇答案！');
             return;
         }
 
-        localStorage.setItem('student_seat', seatValue);
-        localStorage.setItem('student_name', nameValue);
+        try {
+            localStorage.setItem('student_seat', seatValue);
+            localStorage.setItem('student_name', nameValue);
+        } catch (e) {
+            // 忽略 LocalStorage 錯誤
+        }
         
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('msg').innerHTML = "🚀 答案傳送中...";
@@ -103,7 +111,7 @@
         .then(response => response.json())
         .then(result => {
             if(result.status === "success") {
-                document.getElementById('msg').innerHTML = " 投票成功！請等待老師切換下一題。";
+                document.getElementById('msg').innerHTML = "✅ 投票成功！請等待老師下一題。";
                 document.getElementById('msg').className = "success";
                 
                 document.getElementById('ansInput').value = "";
@@ -112,7 +120,7 @@
             }
         })
         .catch(err => {
-            console.error(err); // 增加錯誤捕捉，方便開發者工具看詳細原因
+            console.error(err); 
             alert("傳送失敗，請確認網路連線！");
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('msg').innerHTML = "❌ 傳送失敗，請重試。";
