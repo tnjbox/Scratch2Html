@@ -7,123 +7,153 @@
     <style>
         body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background-color: #f4f6f9; padding: 15px; margin: 0; display: flex; justify-content: center; }
         .card { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
-        h2 { text-align: center; color: #333; margin-top: 0; font-size: 24px; }
+        h2 { text-align: center; color: #333; margin-top: 0; font-size: 24px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;}
+        
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        /* 座號改為 number 輸入類型 */
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
-        .opt-btn { padding: 30px 10px; font-size: 32px; font-weight: bold; color: white; border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        /* 區塊分隔線 */
+        .section-divider { margin: 25px 0 15px 0; border-top: 2px dashed #bdc3c7; padding-top: 15px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .opt-btn { padding: 20px 10px; font-size: 28px; font-weight: bold; color: white; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .opt-btn:active { transform: scale(0.95); }
         .btn-a { background-color: #e74c3c; } 
         .btn-b { background-color: #f1c40f; color: #333; } 
         .btn-c { background-color: #3498db; } 
         .btn-d { background-color: #2ecc71; } 
-        .opt-btn.selected { outline: 6px solid #2c3e50; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
-        .submit-btn { width: 100%; padding: 15px; font-size: 20px; font-weight: bold; background-color: #9b59b6; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .opt-btn.selected { outline: 5px solid #2c3e50; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+        
+        .submit-btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-vote { background-color: #9b59b6; }
+        .btn-text { background-color: #e67e22; }
         .submit-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        
         #msg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; min-height: 24px; }
         .success { color: #27ae60; }
-        .sending { color: #e67e22; }
+        .sending { color: #f39c12; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>📱 課堂互動投票區</h2>
+    <h2>📱 課堂互動區</h2>
     
-    <form id="voteForm" onsubmit="validateAndSubmit(event)">
-        <div class="input-group">
-            <label>您的座號 (1~35)</label>
-            <!-- 💡 修正：改用輸入框，並設定 HTML5 內建的 min 與 max -->
-            <input type="number" id="seat" min="1" max="35" placeholder="請輸入數字 1 到 35" required>
-        </div>
-        <div class="input-group">
-            <label>您的姓名</label>
-            <input type="text" id="name" placeholder="請輸入姓名" required>
-        </div>
-        <input type="hidden" id="ansInput" required>
-        
+    <!-- 基本資料 -->
+    <div class="input-group">
+        <label>您的座號 (1~50)</label>
+        <input type="number" id="seat" min="1" max="50" placeholder="請輸入座號" required>
+    </div>
+    <div class="input-group">
+        <label>您的姓名</label>
+        <input type="text" id="name" placeholder="請輸入姓名" required>
+    </div>
+
+    <!-- 任務一：送出選項 -->
+    <div class="section-divider">
+        <label>🎯 選擇題投票</label>
+        <input type="hidden" id="ansInput">
         <div class="grid">
             <button type="button" class="opt-btn btn-a" onclick="selectOption('A', this)">A</button>
             <button type="button" class="opt-btn btn-b" onclick="selectOption('B', this)">B</button>
             <button type="button" class="opt-btn btn-c" onclick="selectOption('C', this)">C</button>
             <button type="button" class="opt-btn btn-d" onclick="selectOption('D', this)">D</button>
         </div>
-        <button type="submit" id="submitBtn" class="submit-btn">確認送出投票</button>
-    </form>
+        <button type="button" id="btnVote" class="submit-btn btn-vote" onclick="sendData('vote')">📤 送出選項 (A/B/C/D)</button>
+    </div>
+
+    <!-- 任務二：送出文字 -->
+    <div class="section-divider">
+        <label>📝 文字回應 (最多20字)</label>
+        <div class="input-group">
+            <input type="text" id="textResponse" maxlength="20" placeholder="請輸入您的回答...">
+        </div>
+        <button type="button" id="btnText" class="submit-btn btn-text" onclick="sendData('submitText')">📤 送出文字回應</button>
+    </div>
+
     <div id="msg"></div>
 </div>
 
 <script>
-    // 🔗 貼上您最新部署的 GAS 網頁應用程式 URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxLq3ZMg_L6SsctSuqTEjm1jolTMWDxMMdTOhQJ80PGI-y_h3tcXjFWXkZwuDBfnByY/exec"; 
+    // 🔗 貼上您的 GAS 網址
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwT9M_RgJOVoiZhpn-qohd9NK2iisuX2-FueM_QCyspFMzNXZb5KXyqp-3ljo42qeyU/exec"; 
 
-    // 💡 安全讀取 LocalStorage
     try {
         if (localStorage.getItem('student_seat')) document.getElementById('seat').value = localStorage.getItem('student_seat');
         if (localStorage.getItem('student_name')) document.getElementById('name').value = localStorage.getItem('student_name');
-    } catch (e) {
-        console.warn("Iframe 模式下無法讀取記憶體");
-    }
+    } catch (e) {}
 
     function selectOption(value, btnElement) {
         document.getElementById('ansInput').value = value;
         document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
         btnElement.classList.add('selected');
-        document.getElementById('msg').innerHTML = "已選擇 " + value + "，請按下下方按鈕送出。";
+        document.getElementById('msg').innerText = "已選 " + value + "，請按上方紫色按鈕送出";
         document.getElementById('msg').className = "";
     }
 
-    function validateAndSubmit(event) {
-        event.preventDefault(); 
-
-        const seatInput = document.getElementById('seat').value;
+    // 💡 核心傳送邏輯：判斷是傳選項還是傳文字
+    function sendData(actionType) {
+        const seatValue = parseInt(document.getElementById('seat').value, 10);
         const nameValue = document.getElementById('name').value.trim();
-        const ansValue = document.getElementById('ansInput').value;
 
-        // 💡 修正：雙重驗證座號是否在 1~35 之間 (防止學生亂填或用舊版瀏覽器繞過)
-        const seatValue = parseInt(seatInput, 10);
-        if (isNaN(seatValue) || seatValue < 1 || seatValue > 35) {
-            alert('⚠️ 座號錯誤！請輸入 1 到 35 之間的數字。');
-            return;
+        if (isNaN(seatValue) || seatValue < 1 || seatValue > 50) {
+            alert('⚠️ 座號錯誤！請輸入 1 到 50 之間的數字。'); return;
         }
-
-        if (!ansValue) {
-            alert('請先選擇答案！');
-            return;
-        }
+        if (!nameValue) { alert('⚠️ 請輸入姓名！'); return; }
 
         try {
             localStorage.setItem('student_seat', seatValue);
             localStorage.setItem('student_name', nameValue);
-        } catch (e) {
-            // 忽略 LocalStorage 錯誤
+        } catch (e) {}
+
+        // 準備打包送往 GAS 的參數
+        const params = new URLSearchParams();
+        params.append('action', actionType);
+        params.append('seat', seatValue);
+        params.append('name', nameValue);
+        params.append('t', Date.now());
+
+        // 依據不同按鈕檢查對應欄位
+        if (actionType === 'vote') {
+            const ansValue = document.getElementById('ansInput').value;
+            if (!ansValue) { alert('請先選擇答案！'); return; }
+            params.append('vote', ansValue);
+        } else if (actionType === 'submitText') {
+            const textValue = document.getElementById('textResponse').value.trim();
+            if (!textValue) { alert('請輸入文字回應！'); return; }
+            if (textValue.length > 20) { alert('文字太長！請限制在20字以內。'); return; }
+            params.append('textResponse', textValue);
         }
-        
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('msg').innerHTML = "🚀 答案傳送中...";
+
+        // 鎖定按鈕防止連點
+        document.getElementById('btnVote').disabled = true;
+        document.getElementById('btnText').disabled = true;
+        document.getElementById('msg').innerText = "🚀 傳送中...";
         document.getElementById('msg').className = "sending";
 
-        const requestUrl = `${GAS_URL}?action=vote&seat=${seatValue}&name=${encodeURIComponent(nameValue)}&vote=${ansValue}&t=${Date.now()}`;
-
-        fetch(requestUrl)
+        fetch(`${GAS_URL}?${params.toString()}`)
         .then(response => response.json())
         .then(result => {
             if(result.status === "success") {
-                document.getElementById('msg').innerHTML = "✅ 投票成功！請等待老師下一題。";
+                document.getElementById('msg').innerText = actionType === 'vote' ? "✅ 選項投票成功！" : "✅ 文字回應送出成功！";
                 document.getElementById('msg').className = "success";
                 
-                document.getElementById('ansInput').value = "";
-                document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
-                document.getElementById('submitBtn').disabled = false;
+                if(actionType === 'vote') {
+                    document.getElementById('ansInput').value = "";
+                    document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+                } else {
+                    document.getElementById('textResponse').value = "";
+                }
             }
         })
         .catch(err => {
-            console.error(err); 
-            alert("傳送失敗，請確認網路連線！");
-            document.getElementById('submitBtn').disabled = false;
-            document.getElementById('msg').innerHTML = "❌ 傳送失敗，請重試。";
+            alert("傳送失敗，請確認網路！");
+            document.getElementById('msg').innerText = "❌ 傳送失敗";
+        })
+        .finally(() => {
+            document.getElementById('btnVote').disabled = false;
+            document.getElementById('btnText').disabled = false;
         });
     }
 </script>
