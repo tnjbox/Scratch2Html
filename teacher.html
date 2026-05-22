@@ -3,175 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>即時投票系統 - 教師控制端</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>即時投票系統 - 學生端</title>
     <style>
-        body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
-        .container { max-width: 900px; margin: 0 auto; background: #34495e; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        h1 { margin-top: 0; font-size: 32px; letter-spacing: 2px; }
-        .status-bar { font-size: 20px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
+        body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background-color: #f4f6f9; padding: 15px; margin: 0; display: flex; justify-content: center; }
+        .card { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
+        h2 { text-align: center; color: #333; margin-top: 0; font-size: 24px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;}
         
-        .controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn { padding: 12px 20px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .btn:active { transform: scale(0.95); }
-        .btn-toggle-a { background-color: #9b59b6; color: white; }
-        .btn-toggle-b { background-color: #3498db; color: white; }
-        .btn-toggle-c { background-color: #e67e22; color: white; } /* 文字回應按鈕 */
-        .btn-reset { background-color: #e74c3c; color: white; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         
-        .setting-group { background-color: #7f8c8d; padding: 10px 15px; border-radius: 8px; font-size: 18px; font-weight: bold; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .setting-group input { width: 50px; margin-left: 10px; padding: 5px; font-size: 18px; font-weight: bold; text-align: center; border: none; border-radius: 5px; }
+        /* 區塊分隔線 */
+        .section-divider { margin: 25px 0 15px 0; border-top: 2px dashed #bdc3c7; padding-top: 15px; }
 
-        .hidden { display: none !important; }
-        .chart-container { position: relative; height: 40vh; width: 100%; margin-bottom: 30px; }
-
-        /* 座號明細網格 */
-        .details-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 30px; }
-        .seat-card { background: #7f8c8d; color: white; border-radius: 8px; padding: 8px 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .seat-name { font-size: 14px; opacity: 0.9; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .seat-vote { font-size: 24px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .opt-btn { padding: 20px 10px; font-size: 28px; font-weight: bold; color: white; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .opt-btn:active { transform: scale(0.95); }
+        .btn-a { background-color: #e74c3c; } 
+        .btn-b { background-color: #f1c40f; color: #333; } 
+        .btn-c { background-color: #3498db; } 
+        .btn-d { background-color: #2ecc71; } 
+        .opt-btn.selected { outline: 5px solid #2c3e50; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
         
-        /* 文字回應列表樣式 */
-        .text-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; text-align: left; }
-        .text-item { background: #ecf0f1; color: #2c3e50; padding: 12px 15px; border-radius: 8px; font-size: 18px; font-weight: bold; border-left: 6px solid #e67e22; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-        .text-item .name-tag { font-size: 14px; color: #7f8c8d; margin-bottom: 5px; border-bottom: 1px solid #bdc3c7; padding-bottom: 3px; }
-
-        .voted-a { background-color: #e74c3c; }
-        .voted-b { background-color: #f1c40f; color: #333; }
-        .voted-c { background-color: #3498db; }
-        .voted-d { background-color: #2ecc71; }
+        .submit-btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-vote { background-color: #9b59b6; }
+        .btn-text { background-color: #e67e22; }
+        .submit-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        
+        #msg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; min-height: 24px; }
+        .success { color: #27ae60; }
+        .sending { color: #f39c12; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📊 課堂即時互動大盤</h1>
-    <div class="status-bar" id="totalStatus">🟢 目前已投票人數：0 人</div>
+<div class="card">
+    <h2>📱 課堂互動區</h2>
     
-    <div class="controls">
-        <div class="setting-group">
-            班級人數 <input type="number" id="studentCount" value="35" min="1" max="50">
-        </div>
-        <button class="btn btn-toggle-a" onclick="toggleSection('sectionA')">📋 開 / 關座號明細</button>
-        <button class="btn btn-toggle-b" onclick="toggleSection('sectionB')">📊 開 / 關統計圖表</button>
-        <button class="btn btn-toggle-c" onclick="toggleSection('sectionC')">📝 開 / 關文字回應</button>
-        <button class="btn btn-reset" onclick="resetVoting()">🔄 重置本輪資料</button>
+    <!-- 基本資料 -->
+    <div class="input-group">
+        <label>您的座號</label>
+        <input type="number" id="seat" min="1" max="50" placeholder="請輸入座號" required>
+    </div>
+    <div class="input-group">
+        <label>您的姓名 (選填)</label>
+        <!-- 💡 修正：移除 required 屬性，讓姓名變為非必填 -->
+        <input type="text" id="name" placeholder="選填">
     </div>
 
-    <!-- 座號選項明細 -->
-    <div id="sectionA" class="hidden"><div class="details-grid" id="detailsGrid"></div></div>
-    <!-- 統計圖表 -->
-    <div id="sectionB" class="hidden"><div class="chart-container"><canvas id="voteChart"></canvas></div></div>
-    <!-- 文字回應列表 -->
-    <div id="sectionC" class="hidden"><div class="text-list" id="textList"></div></div>
+    <!-- 任務一：送出選項 -->
+    <div class="section-divider">
+        <label>🎯 選擇題投票</label>
+        <input type="hidden" id="ansInput">
+        <div class="grid">
+            <button type="button" class="opt-btn btn-a" onclick="selectOption('A', this)">A</button>
+            <button type="button" class="opt-btn btn-b" onclick="selectOption('B', this)">B</button>
+            <button type="button" class="opt-btn btn-c" onclick="selectOption('C', this)">C</button>
+            <button type="button" class="opt-btn btn-d" onclick="selectOption('D', this)">D</button>
+        </div>
+        <button type="button" id="btnVote" class="submit-btn btn-vote" onclick="sendData('vote')">📤 送出選項 (A/B/C/D)</button>
+    </div>
+
+    <!-- 任務二：送出文字 -->
+    <div class="section-divider">
+        <label>📝 文字回應 (可語音輸入，最多20字)</label>
+        <div class="input-group">
+            <input type="text" id="textResponse" maxlength="20" placeholder="請輸入您的回答...">
+        </div>
+        <button type="button" id="btnText" class="submit-btn btn-text" onclick="sendData('submitText')">📤 送出文字回應</button>
+    </div>
+
+    <div id="msg"></div>
 </div>
 
 <script>
     // 🔗 貼上您的 GAS 網址
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwT9M_RgJOVoiZhpn-qohd9NK2iisuX2-FueM_QCyspFMzNXZb5KXyqp-3ljo42qeyU/exec"; 
 
-    let voteChart;
-    const ctx = document.getElementById('voteChart').getContext('2d');
-    let currentDisplayCount = 35; 
+    try {
+        if (localStorage.getItem('student_seat')) document.getElementById('seat').value = localStorage.getItem('student_seat');
+        if (localStorage.getItem('student_name')) document.getElementById('name').value = localStorage.getItem('student_name');
+    } catch (e) {}
 
-    function toggleSection(id) {
-        document.getElementById(id).classList.toggle('hidden');
+    function selectOption(value, btnElement) {
+        document.getElementById('ansInput').value = value;
+        document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+        btnElement.classList.add('selected');
+        document.getElementById('msg').innerText = "已選 " + value + "，請按上方紫色按鈕送出";
+        document.getElementById('msg').className = "";
     }
 
-    function initChart() {
-        voteChart = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: ['A選項', 'B選項', 'C選項', 'D選項'], datasets: [{ label: '得票數', data: [0, 0, 0, 0], backgroundColor: ['#e74c3c', '#f1c40f', '#3498db', '#2ecc71'], borderRadius: 8 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#fff', stepSize: 1, font: { size: 16 } } }, x: { ticks: { color: '#fff', font: { size: 18, weight: 'bold' } } } } }
-        });
-    }
+    // 傳送邏輯
+    function sendData(actionType) {
+        const seatValue = parseInt(document.getElementById('seat').value, 10);
+        const nameValue = document.getElementById('name').value.trim();
 
-    // 渲染座號格子
-    function renderDetails(displayDetails) {
-        const grid = document.getElementById('detailsGrid');
-        if (grid.children.length !== currentDisplayCount) {
-            grid.innerHTML = ''; 
-            displayDetails.forEach(d => {
-                const card = document.createElement('div');
-                card.id = 'seat-' + d.seat;
-                grid.appendChild(card);
-            });
+        if (isNaN(seatValue) || seatValue < 1 || seatValue > 50) {
+            alert('⚠️ 座號錯誤！請輸入 1 到 50 之間的數字。'); return;
         }
-        displayDetails.forEach(d => {
-            const card = document.getElementById('seat-' + d.seat);
-            if(card) {
-                let seatStr = d.seat < 10 ? '0' + d.seat : d.seat;
-                if (d.vote) {
-                    card.className = 'seat-card voted-' + d.vote.toLowerCase();
-                    card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div><div class="seat-vote">${d.vote}</div>`;
-                } else {
-                    card.className = 'seat-card';
-                    card.innerHTML = `<div class="seat-name">${seatStr} ${d.name}</div><div class="seat-vote">--</div>`;
-                }
-            }
-        });
-    }
+        
+        // 💡 修正：移除了對 nameValue 為空的阻擋邏輯
 
-    // 💡 渲染文字回應列表
-    function renderTextResponses(displayDetails) {
-        const list = document.getElementById('textList');
-        let htmlStr = '';
-        let hasText = false;
+        try {
+            localStorage.setItem('student_seat', seatValue);
+            localStorage.setItem('student_name', nameValue);
+        } catch (e) {}
 
-        displayDetails.forEach(d => {
-            if (d.text) {
-                hasText = true;
-                let seatStr = d.seat < 10 ? '0' + d.seat : d.seat;
-                htmlStr += `<div class="text-item"><div class="name-tag">👤 ${seatStr} 號 ${d.name}</div><div>${d.text}</div></div>`;
-            }
-        });
-        list.innerHTML = hasText ? htmlStr : '<div style="color:#bdc3c7; text-align:center;">尚無學生傳送文字回應</div>';
-    }
+        // 準備打包參數
+        const params = new URLSearchParams();
+        params.append('action', actionType);
+        params.append('seat', seatValue);
+        params.append('name', nameValue);
+        params.append('t', Date.now());
 
-    function fetchVotes() {
-        fetch(`${GAS_URL}?action=getStats&t=${Date.now()}`)
+        if (actionType === 'vote') {
+            const ansValue = document.getElementById('ansInput').value;
+            if (!ansValue) { alert('請先選擇答案！'); return; }
+            params.append('vote', ansValue);
+        } else if (actionType === 'submitText') {
+            const textValue = document.getElementById('textResponse').value.trim();
+            if (!textValue) { alert('請輸入文字回應！'); return; }
+            if (textValue.length > 20) { alert('文字太長！請限制在20字以內。'); return; }
+            params.append('textResponse', textValue);
+        }
+
+        // 鎖定按鈕防止連點
+        document.getElementById('btnVote').disabled = true;
+        document.getElementById('btnText').disabled = true;
+        document.getElementById('msg').innerText = "🚀 傳送中...";
+        document.getElementById('msg').className = "sending";
+
+        fetch(`${GAS_URL}?${params.toString()}`)
         .then(response => response.json())
-        .then(data => {
-            voteChart.data.datasets[0].data = [data.A, data.B, data.C, data.D];
-            voteChart.update();
-            
-            if (data.details) {
-                const displayDetails = data.details.slice(0, currentDisplayCount);
-                renderDetails(displayDetails);
-                renderTextResponses(displayDetails);
-            }
-            document.getElementById('totalStatus').innerText = `🟢 目前已投票人數：${data.total} 人`;
-        })
-        .catch(err => console.error("讀取資料失敗:", err));
-    }
-
-    function resetVoting() {
-        if (confirm("確定要清空全班【選項與文字】紀錄，開始新一題嗎？")) {
-            let inputCount = parseInt(document.getElementById('studentCount').value, 10);
-            if (!isNaN(inputCount) && inputCount > 0) currentDisplayCount = inputCount;
-
-            document.getElementById('totalStatus').innerText = "🟡 正在清除試算表...";
-            
-            fetch(`${GAS_URL}?action=reset&t=${Date.now()}`)
-            .then(response => response.json())
-            .then(result => {
-                if(result.status === "success") {
-                    voteChart.data.datasets[0].data = [0, 0, 0, 0];
-                    voteChart.update();
-                    fetchVotes();
-                    
-                    document.getElementById('sectionA').classList.add('hidden');
-                    document.getElementById('sectionB').classList.add('hidden');
-                    document.getElementById('sectionC').classList.add('hidden');
-                    document.getElementById('totalStatus').innerText = "🟢 目前已投票人數：0 人 (已成功重置)";
+        .then(result => {
+            if(result.status === "success") {
+                document.getElementById('msg').innerText = actionType === 'vote' ? "✅ 選項投票成功！" : "✅ 文字回應送出成功！";
+                document.getElementById('msg').className = "success";
+                
+                if(actionType === 'vote') {
+                    document.getElementById('ansInput').value = "";
+                    document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+                } else {
+                    document.getElementById('textResponse').value = "";
                 }
-            }).catch(err => alert("重置失敗，請檢查網路:", err));
-        }
+            }
+        })
+        .catch(err => {
+            alert("傳送失敗，請確認網路！");
+            document.getElementById('msg').innerText = "❌ 傳送失敗";
+        })
+        .finally(() => {
+            document.getElementById('btnVote').disabled = false;
+            document.getElementById('btnText').disabled = false;
+        });
     }
-
-    initChart();
-    fetchVotes();
-    setInterval(fetchVotes, 2000); 
 </script>
 
 </body>
