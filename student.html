@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>即時投票系統 - 學生端</title>
+    <title>即時互動系統 - 學生端</title>
     <style>
         body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background-color: #f4f6f9; padding: 15px; margin: 0; display: flex; justify-content: center; }
         .card { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
@@ -13,7 +13,6 @@
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         
-        /* 區塊分隔線 */
         .section-divider { margin: 25px 0 15px 0; border-top: 2px dashed #bdc3c7; padding-top: 15px; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -40,18 +39,15 @@
 <div class="card">
     <h2>📱 課堂互動區</h2>
     
-    <!-- 基本資料 -->
     <div class="input-group">
-        <label>您的座號</label>
+        <label>您的座號 (1~50)</label>
         <input type="number" id="seat" min="1" max="50" placeholder="請輸入座號" required>
     </div>
     <div class="input-group">
         <label>您的姓名 (選填)</label>
-        <!-- 💡 修正：移除 required 屬性，讓姓名變為非必填 -->
-        <input type="text" id="name" placeholder="選填">
+        <input type="text" id="name" placeholder="若老師已建檔則免填">
     </div>
 
-    <!-- 任務一：送出選項 -->
     <div class="section-divider">
         <label>🎯 選擇題投票</label>
         <input type="hidden" id="ansInput">
@@ -64,11 +60,10 @@
         <button type="button" id="btnVote" class="submit-btn btn-vote" onclick="sendData('vote')">📤 送出選項 (A/B/C/D)</button>
     </div>
 
-    <!-- 任務二：送出文字 -->
     <div class="section-divider">
-        <label>📝 文字回應 (可語音輸入，最多20字)</label>
+        <label>📝 文字回應 (最多50字)</label>
         <div class="input-group">
-            <input type="text" id="textResponse" maxlength="20" placeholder="請輸入您的回答...">
+            <input type="text" id="textResponse" maxlength="50" placeholder="請輸入您的回答...">
         </div>
         <button type="button" id="btnText" class="submit-btn btn-text" onclick="sendData('submitText')">📤 送出文字回應</button>
     </div>
@@ -78,7 +73,7 @@
 
 <script>
     // 🔗 貼上您的 GAS 網址
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwT9M_RgJOVoiZhpn-qohd9NK2iisuX2-FueM_QCyspFMzNXZb5KXyqp-3ljo42qeyU/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzcTuJoyN0kBI1bmmGmxOVoQCpMA2haE0ZAUHbDVEW6KVM85kTTm507JJIcMhXCFsOf/exec"; 
 
     try {
         if (localStorage.getItem('student_seat')) document.getElementById('seat').value = localStorage.getItem('student_seat');
@@ -93,7 +88,6 @@
         document.getElementById('msg').className = "";
     }
 
-    // 傳送邏輯
     function sendData(actionType) {
         const seatValue = parseInt(document.getElementById('seat').value, 10);
         const nameValue = document.getElementById('name').value.trim();
@@ -101,15 +95,12 @@
         if (isNaN(seatValue) || seatValue < 1 || seatValue > 50) {
             alert('⚠️ 座號錯誤！請輸入 1 到 50 之間的數字。'); return;
         }
-        
-        // 💡 修正：移除了對 nameValue 為空的阻擋邏輯
 
         try {
             localStorage.setItem('student_seat', seatValue);
             localStorage.setItem('student_name', nameValue);
         } catch (e) {}
 
-        // 準備打包參數
         const params = new URLSearchParams();
         params.append('action', actionType);
         params.append('seat', seatValue);
@@ -123,11 +114,10 @@
         } else if (actionType === 'submitText') {
             const textValue = document.getElementById('textResponse').value.trim();
             if (!textValue) { alert('請輸入文字回應！'); return; }
-            if (textValue.length > 20) { alert('文字太長！請限制在20字以內。'); return; }
+            if (textValue.length > 50) { alert('文字太長！請限制在50字以內。'); return; }
             params.append('textResponse', textValue);
         }
 
-        // 鎖定按鈕防止連點
         document.getElementById('btnVote').disabled = true;
         document.getElementById('btnText').disabled = true;
         document.getElementById('msg').innerText = "🚀 傳送中...";
